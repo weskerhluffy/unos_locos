@@ -5,7 +5,7 @@ AC_PREREQ([2.59])
 AC_INIT([Money], [0.3], [check-devel AT lists.sourceforge.net])
 
 # unique source file --- primitive safety check 
-AC_CONFIG_SRCDIR([src/money.c])
+AC_CONFIG_SRCDIR([src/unoslocos.c])
 
 # place to put some extra build scripts installed
 AC_CONFIG_AUX_DIR([build-aux])
@@ -44,3 +44,5 @@ AC_CONFIG_FILES([Makefile
                  tests/Makefile])
 
 AC_OUTPUT
+AM_PROG_AR
+

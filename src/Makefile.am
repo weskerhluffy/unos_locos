@@ -1,8 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 
-lib_LTLIBRARIES = libmoney.la
-libmoney_la_SOURCES = money.c money.h
+lib_LTLIBRARIES = libunoslocos.la
+libunoslocos_la_SOURCES = unoslocos.c unoslocos.h
 
 bin_PROGRAMS = main
 main_SOURCES = main.c
-main_LDADD = libmoney.la
+main_LDADD = libunoslocos.la
