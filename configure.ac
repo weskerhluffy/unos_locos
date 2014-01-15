@@ -12,7 +12,9 @@ AC_CONFIG_AUX_DIR([build-aux])
 
 # fairly severe build strictness
 # change foreign to gnu or gnits to comply with gnu standards
+#http://lists.gnu.org/archive/html/bug-automake/2012-05/msg00009.html
 AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.9.6])
+AM_PROG_AR
 
 # Checks for programs.
 AC_PROG_CC
@@ -44,5 +46,3 @@ AC_CONFIG_FILES([Makefile
                  tests/Makefile])
 
 AC_OUTPUT
-AM_PROG_AR
-
