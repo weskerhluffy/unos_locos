@@ -50,3 +50,5 @@ tests/check_unoslocos-check_unoslocos.o
 tests/check_unoslocos.log
 
 tests/test-suite.log
+
+tests/.test-suite.log.swp
