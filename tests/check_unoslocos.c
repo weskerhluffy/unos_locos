@@ -64,9 +64,21 @@ START_TEST( test_num_unos_1) {
 	unsigned long resultado_esperado = 239502115812196372;
 	unsigned long resultado_real = 0;
 
-	resultado_real = num_unos(1000000000000000, 10000000000000000);
-	ck_assert_msg(resultado_real == resultado_esperado, "Expecting %ld, got %ld",
-			resultado_esperado, resultado_real);
+	resultado_real = num_unos(numero_1, numero_2);
+	ck_assert_msg(resultado_real == resultado_esperado,
+			"Expecting %ld, got %ld", resultado_esperado, resultado_real);
+}
+END_TEST
+
+START_TEST( test_num_unos_2) {
+	unsigned long numero_1 = 9007199254740992;
+	unsigned long numero_2 = 9007199254740992;
+	unsigned long resultado_esperado = 1;
+	unsigned long resultado_real = 0;
+
+	resultado_real = num_unos(numero_1, numero_2);
+	ck_assert_msg(resultado_real == resultado_esperado,
+			"Expecting %ld, got %ld", resultado_esperado, resultado_real);
 }
 END_TEST
 
@@ -85,6 +97,7 @@ unoslocos_suite(void) {
 	tcase_add_test(tc_core, test_ant_num);
 	tcase_add_test(tc_core, test_num_unos);
 	tcase_add_test(tc_core, test_num_unos_1);
+	tcase_add_test(tc_core, test_num_unos_2);
 	suite_add_tcase(s, tc_core);
 
 	return s;

@@ -1,0 +1,24 @@
+breakpoint command add 1
+print "pos_bit"
+print pos_bit
+print "caso_extremos"
+print caso_extremos
+print "tam_ventana"
+print tam_ventana
+print "longitud_unos"
+print longitud_unos
+print "relacion_ventana_longitud"
+print relacion_ventana_longitud
+print "periodo_binario"
+print periodo_binario
+print "num_crestas_unos"
+print num_crestas_unos
+print "residuo"
+print residuo
+print "num_unos_en_crestas"
+print num_unos_en_crestas
+print "num_unos_en_extremos"
+print num_unos_en_extremos
+print "num_cambio_bit"
+print num_cambio_bit
+ DONE

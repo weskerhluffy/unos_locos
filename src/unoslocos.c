@@ -51,6 +51,7 @@ unsigned long num_unos(unsigned long numero_1, unsigned long numero_2) {
 	int pos_bit = 0;
 	int caso_extremos = -1;
 	int relacion_ventana_longitud = -1;
+	unsigned long residuo = 0;
 	unsigned long tam_ventana = 0;
 	unsigned long unos_bit_actual = 0;
 	unsigned long unos_totales = 0;
@@ -62,13 +63,13 @@ unsigned long num_unos(unsigned long numero_1, unsigned long numero_2) {
 	unsigned long num_cambio_bit = 0;
 
 	num_bits = num_bits_req(numero_2);
-	tam_ventana = numero_2 - numero_1;
+	tam_ventana = numero_2 - numero_1 + 1;
 
 	for (pos_bit = (num_bits - 1); pos_bit >= 0; pos_bit--) {
 		unos_bit_actual = 0;
 		num_unos_en_crestas = 0;
 		num_unos_en_extremos = 0;
-		longitud_unos = 1 << pos_bit;
+		longitud_unos = (unsigned long) 1 << pos_bit;
 		periodo_binario = longitud_unos << 1;
 
 		bit_extremo_1 = bit(numero_1,pos_bit);
@@ -104,32 +105,42 @@ unsigned long num_unos(unsigned long numero_1, unsigned long numero_2) {
 		}
 
 		num_crestas_unos = tam_ventana / periodo_binario;
+		residuo = tam_ventana % periodo_binario;
 		num_unos_en_crestas =
 				num_crestas_unos ? num_crestas_unos * longitud_unos : 0;
 		switch (caso_extremos) {
 		case EXTREMOS_0_0:
+			if (relacion_ventana_longitud == VENTANA_IGUAL_LONGITUD_UNOS
+					|| relacion_ventana_longitud == VENTANA_MENOR_LONGITUD_UNOS) {
+				num_unos_en_crestas = 0;
+			} else {
+				if (residuo > longitud_unos) {
+					num_unos_en_extremos += longitud_unos;
+				}
+			}
 			break;
 		case EXTREMOS_0_1:
 		case EXTREMOS_1_0:
-			if (caso_extremos == EXTREMOS_0_1) {
-				num_cambio_bit = num_ant_cambio_bit(numero_2, pos_bit);
-				num_unos_en_extremos = numero_2 - num_cambio_bit + 1;
-			} else {
-				num_cambio_bit = num_sig_cambio_bit(numero_1, pos_bit);
-				num_unos_en_extremos = num_cambio_bit - numero_1 + 1;
+			if (residuo) {
+				if (caso_extremos == EXTREMOS_0_1) {
+					num_cambio_bit = num_ant_cambio_bit(numero_2, pos_bit);
+					num_unos_en_extremos = numero_2 - num_cambio_bit + 1;
+				} else {
+					num_cambio_bit = num_sig_cambio_bit(numero_1, pos_bit);
+					num_unos_en_extremos = num_cambio_bit - numero_1 + 1;
+				}
 			}
 
 			break;
 		case EXTREMOS_1_1:
 			if (relacion_ventana_longitud == VENTANA_IGUAL_LONGITUD_UNOS
-					|| relacion_ventana_longitud == VENTANA_MAYOR_LONGITUD_UNOS) {
+					|| relacion_ventana_longitud == VENTANA_MENOR_LONGITUD_UNOS) {
 				num_unos_en_crestas = numero_2 - numero_1 + 1;
 			} else {
-				num_cambio_bit = num_ant_cambio_bit(numero_2, pos_bit);
-				num_unos_en_extremos = numero_2 - num_cambio_bit + 1;
-
-				num_cambio_bit = num_sig_cambio_bit(numero_1, pos_bit);
-				num_unos_en_extremos += num_cambio_bit - numero_1 + 1;
+				num_unos_en_extremos += residuo;
+				if (residuo > longitud_unos) {
+					num_unos_en_extremos -= longitud_unos;
+				}
 			}
 			break;
 		default:

@@ -19,7 +19,7 @@
 
 #define bit(numero,posicion_bit) numero >> posicion_bit & 1
 
-#define mascara_sig_cambio_bit(posicion_bit) ((1 << posicion_bit )-1)
+#define mascara_sig_cambio_bit(posicion_bit) (((unsigned long)1 << posicion_bit )-1)
 #define mascara_ant_cambio_bit(posicion_bit) ~mascara_sig_cambio_bit(posicion_bit)
 
 unsigned int num_bits_req(unsigned long numero);
