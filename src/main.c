@@ -6,6 +6,7 @@
 #include "unoslocos.h"
 #include <stdio.h>
 
+//XXX: http://stackoverflow.com/questions/16345261/how-do-you-add-breakpoint-actions-via-the-lldb-command-line
 int main(void) {
 	unsigned long numero_1 = 1000000000000000;
 	unsigned long numero_2 = 10000000000000000;

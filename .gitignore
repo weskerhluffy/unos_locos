@@ -54,3 +54,16 @@ tests/test-suite.log
 tests/.test-suite.log.swp
 
 *.swp
+*.o
+*.Plo
+*.a
+*.dylib
+*.lai
+*.log
+*.lo
+*.la
+*.Po
+
+tests/.libs/check_cacacomun
+
+tests/check_cacacomun

@@ -82,6 +82,7 @@ START_TEST( test_num_unos_2) {
 }
 END_TEST
 
+
 Suite *
 unoslocos_suite(void) {
 	Suite *s = suite_create("Unos locos");

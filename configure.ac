@@ -2,7 +2,7 @@
 
 # Prelude.
 AC_PREREQ([2.59])
-AC_INIT([Money], [0.3], [check-devel AT lists.sourceforge.net])
+AC_INIT([Mierda], [1.1], [check-devel AT lists.sourceforge.net])
 
 # unique source file --- primitive safety check 
 AC_CONFIG_SRCDIR([src/unoslocos.c])
