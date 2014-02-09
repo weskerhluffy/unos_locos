@@ -3,19 +3,20 @@
  whole program testing framework like Autotest.
  */
 
+#include <stdlib.h>
 #include <stdio.h>
-#include "unoslocos.h"
+#include <string.h>
 #include "cacacomun.h"
+#include "unoslocos.h"
 
-//XXX: http://stackoverflow.com/questions/16345261/how-do-you-add-breakpoint-actions-via-the-lldb-command-line
-int main(void) {
-	const char *nombre_archivo =
-			"/Users/ernesto/workspace/unos_locos/mierda.txt";
+int main(int argc, char *argv[]) {
+	char nombre_archivo[TAM_MAX_LINEA];
 	unsigned long unos[MAX_FILAS];
 	int filas_encontradas = 0;
 	int i = 0;
 	unsigned long conteo_unos = 0;
 
+	strcpy(nombre_archivo, argv[1]);
 	contar_caca(nombre_archivo, unos, &filas_encontradas);
 
 	for (i = 0; i < filas_encontradas; i++) {
