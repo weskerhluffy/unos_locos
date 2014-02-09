@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "unoslocos.h"
+#include "cacacomun.h"
+
 unsigned int num_bits_req(unsigned long numero) {
 	int num_bits_long = sizeof(unsigned long) * 8;
 	int i = 0;
@@ -154,4 +156,23 @@ unsigned long num_unos(unsigned long numero_1, unsigned long numero_2) {
 	}
 
 	return unos_totales;
+}
+
+int contar_caca(const char * nombre_archivo,
+		unsigned long conteo_unos[MAX_FILAS], int *filas_encontradas) {
+	unsigned long matrix[MAX_COLUMNAS][MAX_FILAS];
+	unsigned long num_unos_encontrados = 0;
+	int filas_encontradas_tmp = 0;
+	int indice_filas = 0;
+
+	lee_matriz_int_archivo(nombre_archivo, matrix, &filas_encontradas_tmp);
+	for (indice_filas = 0; indice_filas < filas_encontradas_tmp;
+			indice_filas++) {
+		num_unos_encontrados = num_unos(matrix[0][indice_filas],
+				matrix[1][indice_filas]);
+		conteo_unos[indice_filas] = num_unos_encontrados;
+	}
+
+	*filas_encontradas = filas_encontradas_tmp;
+	return 0;
 }

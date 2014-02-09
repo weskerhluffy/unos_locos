@@ -11,7 +11,7 @@
 #include "cacacomun.h"
 
 int lee_matriz_int_archivo(const char * nombre_archivo,
-		unsigned long matrix[MAX_COLUMNAS][MAX_FILAS]) {
+		unsigned long matrix[MAX_COLUMNAS][MAX_FILAS], int *filas) {
 	int indice_filas = 0;
 	int indice_columnas = 0;
 	long numero = 0;
@@ -19,7 +19,7 @@ int lee_matriz_int_archivo(const char * nombre_archivo,
 	char linea[TAM_MAX_LINEA];
 	FILE *fp;
 
-	fp = fopen("/Users/ernesto/workspace/unos_locos/mierda.txt", "r");
+	fp = fopen(nombre_archivo, "r");
 	if (fp == NULL ) {
 		perror("Error while opening the file.\n");
 		exit(EXIT_FAILURE);
@@ -37,6 +37,7 @@ int lee_matriz_int_archivo(const char * nombre_archivo,
 		}
 		indice_filas++;
 	}
+	*filas = indice_filas;
 	fclose(fp);
 	return 0;
 }

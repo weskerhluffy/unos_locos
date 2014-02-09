@@ -5,6 +5,8 @@
  *      Author: ernesto
  */
 
+#include "cacacomun.h"
+
 #ifndef UNOSLOCOS_H
 #define UNOSLOCOS_H
 
@@ -29,5 +31,8 @@ unsigned long num_sig_cambio_bit(unsigned long numero, int pos_bit);
 unsigned long num_ant_cambio_bit(unsigned long numero, int pos_bit);
 
 unsigned long num_unos(unsigned long numero_1, unsigned long numero_2);
+
+int contar_caca(const char * nombre_archivo,
+		unsigned long conteo_unos[MAX_FILAS],int *filas_encontradas);
 
 #endif /* UNOSLOCOS_H */

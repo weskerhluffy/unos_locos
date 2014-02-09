@@ -82,6 +82,30 @@ START_TEST( test_num_unos_2) {
 }
 END_TEST
 
+START_TEST( cuenta_caca) {
+
+	const char *nombre_archivo =
+			"/Users/ernesto/workspace/unos_locos/mierda.txt";
+	unsigned long valor_esperado_0 = 239502115812196372;
+	unsigned long valor_esperado_2 = 1;
+	unsigned long resultado_real_0 = 0;
+	unsigned long resultado_real_2 = 0;
+	unsigned long unos[MAX_FILAS];
+	int filas_encontradas = 0;
+	int filas_esperadas = 3;
+
+	contar_caca(nombre_archivo, unos, &filas_encontradas);
+	resultado_real_0 = unos[0];
+	resultado_real_2 = unos[2];
+
+	ck_assert_msg(
+			resultado_real_0 == valor_esperado_0
+					&& resultado_real_2 == valor_esperado_2
+					&& filas_encontradas == filas_esperadas,
+			"Expecting %ld and %ld, got %ld and %ld", valor_esperado_0,
+			valor_esperado_2, resultado_real_0, resultado_real_2);
+}
+END_TEST
 
 Suite *
 unoslocos_suite(void) {
@@ -99,6 +123,7 @@ unoslocos_suite(void) {
 	tcase_add_test(tc_core, test_num_unos);
 	tcase_add_test(tc_core, test_num_unos_1);
 	tcase_add_test(tc_core, test_num_unos_2);
+	tcase_add_test(tc_core, cuenta_caca);
 	suite_add_tcase(s, tc_core);
 
 	return s;
