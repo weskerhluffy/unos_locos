@@ -165,7 +165,11 @@ int contar_caca(const char * nombre_archivo,
 	int filas_encontradas_tmp = 0;
 	int indice_filas = 0;
 
-	lee_matriz_int_archivo(nombre_archivo, matrix, &filas_encontradas_tmp);
+	if (nombre_archivo == NULL ) {
+		lee_matriz_long_stdin(matrix, &filas_encontradas_tmp);
+	} else {
+		lee_matriz_int_archivo(nombre_archivo, matrix, &filas_encontradas_tmp);
+	}
 	for (indice_filas = 0; indice_filas < filas_encontradas_tmp;
 			indice_filas++) {
 		num_unos_encontrados = num_unos(matrix[0][indice_filas],

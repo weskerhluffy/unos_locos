@@ -18,4 +18,7 @@
 int lee_matriz_int_archivo(const char * nombre_archivo,
 		unsigned long matrix[MAX_COLUMNAS][MAX_FILAS], int *filas);
 
+int lee_matriz_long_stdin(unsigned long matrix[MAX_COLUMNAS][MAX_FILAS],
+		int *filas);
+
 #endif /* CACACOMUN_H_ */

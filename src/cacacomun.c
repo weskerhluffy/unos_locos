@@ -41,3 +41,26 @@ int lee_matriz_int_archivo(const char * nombre_archivo,
 	fclose(fp);
 	return 0;
 }
+
+int lee_matriz_long_stdin(unsigned long matrix[MAX_COLUMNAS][MAX_FILAS],
+		int *filas) {
+	int indice_filas = 0;
+	int indice_columnas = 0;
+	long numero = 0;
+	char *inicio_cadena_num = NULL;
+	char linea[TAM_MAX_LINEA];
+	char input_usuario[TAM_MAX_LINEA][MAX_FILAS];
+
+	fgets(linea,TAM_MAX_LINEA,stdin);
+	sscanf(linea, "%ld %ld", &matrix[0][indice_filas],
+			&matrix[1][indice_filas]);
+	indice_filas++;
+	while (fgets(linea, TAM_MAX_LINEA, stdin)
+			&& sscanf(linea, "%ld %ld", &matrix[0][indice_filas],
+					&matrix[1][indice_filas]) == 2) {
+		indice_filas++;
+	}
+
+	*filas = indice_filas;
+	return 0;
+}
