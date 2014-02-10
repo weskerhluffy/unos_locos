@@ -44,6 +44,7 @@ START_TEST( test_lee_matrix_stdin) {
 	const char *cagada =
 			"1000000000000000 10000000000000000\n2 12\n9007199254740992 9007199254740992\n";
 
+//XXX: http://stackoverflow.com/questions/5740176/how-do-i-write-a-testing-function-for-another-function-that-uses-stdin-input
 	pid = forkpty(&ptyfd, 0, 0, 0);
 	if (pid < 0)
 		perror("forkpty"), exit(1);
