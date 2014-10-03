@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <execinfo.h>
+#include <stdarg.h>
 #include <zlog.h>
 #include "cacacomun.h"
 
@@ -46,11 +48,7 @@ int lee_matriz_int_archivo(const char * nombre_archivo,
 int lee_matriz_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 		int *filas) {
 	int indice_filas = 0;
-	int indice_columnas = 0;
-	long numero = 0;
-	char *inicio_cadena_num = NULL;
 	char linea[TAM_MAX_LINEA];
-	char input_usuario[TAM_MAX_LINEA][MAX_FILAS_INPUT];
 
 	fgets(linea, TAM_MAX_LINEA, stdin);
 	sscanf(linea, "%ld %ld", &matrix[0][indice_filas],
@@ -72,7 +70,6 @@ int lee_matrix_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 		int *num_filas, int *num_columnas) {
 	int indice_filas = 0;
 	int indice_columnas = 0;
-	int rc = 0;
 	long numero = 0;
 	char *siguiente_cadena_numero = NULL;
 	char *cadena_numero_actual = NULL;
@@ -113,7 +110,6 @@ int lee_matrix_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 int imprime_matrix(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 		int num_filas, int *num_columnas) {
 	int i = 0, j = 0;
-	int rc = 0;
 	tipo_dato numero_actual = 0;
 
 	caca_log_debug("Me corto los webos");
@@ -135,8 +131,31 @@ int imprime_matrix(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 	return 0;
 }
 
-int init_grafo(tipo_dato[3][MAX_FILAS_INPUT], bool
-usar_hashes) {
+/*int init_grafo(tipo_dato[3][MAX_FILAS_INPUT], grafo_contexto *ctx,
+ int num_filas, bool
+ usar_hashes) */
+int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
+		bool usar_hashes) {
+	int i = 0, j = 0, k = 0;
+	tipo_dato **matrix_int = NULL;
+
+	matrix_int = (tipo_dato **) matrix;
+	caca_log_debug("despues de acer el cacast");
+
+//	memset((void * )ctx, 0, sizeof(grafo_contexto));
+	caca_log_debug("despues de acer el set de ceros");
+//	memset((void * )ctx->matrix_distancias, MAX_VALOR,
+//			sizeof(ctx->matrix_distancias));
+	caca_log_debug("despues de inicializar contexto %s", "mierdadsdsadsa");
+	zlog_debug(cacategoria, "la mierda %s %d", "wwww", k);
+
+	for (j = 0; j < num_filas; j++) {
+		for (i = 0; i < 3; i++) {
+			caca_log_debug("recorriendo mierda %d,%d %d", j, i, k);
+			caca_log_debug("en pos %d,%d el valor %ld", i, j,
+					*(*(matrix_int + i) + j));
+		}
+	}
 
 	return (0);
 }
@@ -172,7 +191,7 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_lineal_lista_nodos(nodo *inicio,
 	nodo *nodo_anterior = NULL;
 	nodo **nodos_encontrados_int = NULL;
 
-	nodos_encontrados_int = ((nodo **) *nodos_encontrados);
+	nodos_encontrados_int = ((nodo **) nodos_encontrados);
 
 	nodo_actual = inicio;
 
@@ -299,7 +318,7 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
 	char cadena1[MAX_TAM_CADENA];
 	char cadena2[MAX_TAM_CADENA];
 	nodo **nodos_encontrados_int = NULL;
-	nodos_encontrados_int = ((nodo **) *nodos_encontrados);
+	nodos_encontrados_int = ((nodo **) nodos_encontrados);
 	caca_log_debug("entrando con inicio %d y fin %d", indice_inicial,
 			indice_final);
 
@@ -311,14 +330,14 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
 	} else {
 		indice_medio = (indice_inicial + indice_final) / 2;
 		resultado_comparacion = grafo_comparar_nodos(nodo_a_buscar,
-				*(inicio + indice_medio), criterio_busqueda) == 0;
+				(inicio + indice_medio), criterio_busqueda) == 0;
 		caca_log_debug("comparando nodo %s con %s (posicion %d), resultado %d",
 				nodo_a_cadena(nodo_a_buscar, cadena1),
-				nodo_a_cadena(*(inicio + indice_medio)), indice_medio,
+				nodo_a_cadena((inicio + indice_medio), cadena2), indice_medio,
 				resultado_comparacion);
 		if (resultado_comparacion == 0) {
 			tipo_resultado = GRAFO_NODO_ENCONTRADO;
-			*nodos_encontrados = *(inicio + indice_medio);
+			*nodos_encontrados_int = (inicio + indice_medio);
 		} else {
 			if (resultado_comparacion == -1) {
 				indice_final = indice_medio - 1;
@@ -368,8 +387,7 @@ static inline int grafo_comparar_nodos(nodo *nodo1, nodo *nodo2,
 		val2 = nodo2->indice;
 		break;
 	default:
-		perror("en GRAFO_COMPARAR_NODOS %s un error culero al buscar",
-				__func__);
+		perror("en GRAFO_COMPARAR_NODOS %s un error culero al buscar");
 		break;
 	}
 	if (val1 < val2) {
@@ -388,31 +406,32 @@ static inline int grafo_comparar_nodos(nodo *nodo1, nodo *nodo2,
 }
 
 // XXX: http://stackoverflow.com/questions/4867229/code-for-printf-function-in-c
-void caca_log_debug(const char *format, ...) {
+void caca_log_debug_func(const char *format, ...) {
 	va_list arg;
-	size_t size;
-	size_t i;
-	const char *HEADER = "funcion: %s; nivel: %ld 8====D ";
+	va_list arg2;
+	const char *HEADER = "archivo: %s; funcion: %s; linea %d; nivel: %d caca 8====D ";
 	char formato[MAX_TAM_CADENA + sizeof(HEADER)];
-	void *array[MAX_TAM_CADENA];
 
-	size = backtrace(array, MAX_TAM_CADENA);
-
+	strcpy(formato, HEADER);
 	strcat(formato, format);
+//	printf("el formato kedo %s",formato);
 
 	if (!cacategoria) {
+		init_zlog("/Users/ernesto/workspace/unos_locos/zlog.conf");
 		INIT_ZLOG_CATEGORY(cacategoria, "cacacomun");
 	}
 
 	va_start(arg, format);
-//	   vfprintf (stdout, format, arg);
-	zlog_debug(cacategoria, formato, __func__, size, arg);
+	va_copy(arg2, arg);
+// XXX: http://stackoverflow.com/questions/5977326/call-printf-using-va-list
+	vzlog_debug(cacategoria, formato, arg2);
+	va_end(arg2);
 	va_end(arg);
 }
 
-void init_zlog() {
+void init_zlog(const char *arch_conf) {
 	int rc = 0;
-	rc = zlog_init("/Users/ernesto/workspace/unos_locos/zlog.conf");
+	rc = zlog_init(arch_conf);
 	if (rc) {
 		printf("init failed\n");
 		exit(-1);

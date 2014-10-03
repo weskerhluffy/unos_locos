@@ -90,7 +90,7 @@ START_TEST( cuenta_caca) {
 	unsigned long valor_esperado_2 = 1;
 	unsigned long resultado_real_0 = 0;
 	unsigned long resultado_real_2 = 0;
-	unsigned long unos[MAX_FILAS];
+	unsigned long unos[MAX_FILAS_INPUT];
 	int filas_encontradas = 0;
 	int filas_esperadas = 3;
 

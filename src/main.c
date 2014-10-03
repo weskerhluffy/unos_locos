@@ -11,7 +11,7 @@
 
 int main(int argc, char *argv[]) {
 	char nombre_archivo[TAM_MAX_LINEA];
-	unsigned long unos[MAX_FILAS];
+	unsigned long unos[MAX_FILAS_INPUT];
 	int filas_encontradas = 0;
 	int i = 0;
 	unsigned long conteo_unos = 0;

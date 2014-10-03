@@ -14,76 +14,29 @@
 
 static int *resultado_assestment = NULL;
 
-/*
-START_TEST( test_lee_matrix)
+START_TEST( test_init_grapho)
 	{
 
-		const char *nombre_archivo =
-				"/Users/ernesto/workspace/unos_locos/mierda.txt";
-		tipo_dato valor_esperado_0_0 = 1000000000000000;
-		tipo_dato valor_esperado_1_2 = 9007199254740992;
-		tipo_dato resultado_real_0_0 = 0;
-		tipo_dato resultado_real_1_2 = 0;
-		int filas_esperadas = 3;
-		int resulta_filas = 0;
-		tipo_dato matrix[MAX_COLUMNAS][MAX_FILAS];
+		const tipo_dato VALORES[3][3] = { { 10, 20, 30 }, { 100, 200, 300 }, {
+				1000, 2000, 3000 } };
+		int filas = 3;
+		int resultado = 0;
+		grafo_contexto ctx;
 
-		lee_matriz_int_archivo(nombre_archivo, matrix, &resulta_filas);
-		resultado_real_0_0 = matrix[0][0];
-		resultado_real_1_2 = matrix[1][2];
+		resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero);
 
-		ck_assert_msg(
-				resultado_real_0_0 == valor_esperado_0_0
-						&& resultado_real_1_2 == valor_esperado_1_2
-						&& resulta_filas == filas_esperadas,
-				"Expecting %ld and %ld, got %ld and %ld", valor_esperado_0_0,
-				valor_esperado_1_2, resultado_real_0_0, resultado_real_1_2);
+		zlog_fini();
+
+		ck_assert_msg(!resultado, "todo en orden %s", resultado);
 	}END_TEST
 
-START_TEST( test_lee_matrix_stdin)
-	{
-
-		tipo_dato valor_esperado_0_0 = 1000000000000000;
-		tipo_dato valor_esperado_1_2 = 9007199254740992;
-		tipo_dato resultado_real_0_0 = 0;
-		tipo_dato resultado_real_1_2 = 0;
-		int filas_esperadas = 3;
-		int resulta_filas = 0;
-		tipo_dato matrix[MAX_COLUMNAS][MAX_FILAS];
-		int ptyfd = 0;
-		int pid = 0;
-		const char *cagada =
-				"1000000000000000 10000000000000000\n2 12\n9007199254740992 9007199254740992\n";
-
-//XXX: http://stackoverflow.com/questions/5740176/how-do-i-write-a-testing-function-for-another-function-that-uses-stdin-input
-		pid = forkpty(&ptyfd, 0, 0, 0);
-		if (pid < 0)
-			perror("forkpty"), exit(1);
-		if (!pid) {
-			lee_matriz_long_stdin(matrix, &resulta_filas);
-			resultado_real_0_0 = matrix[0][0];
-			resultado_real_1_2 = matrix[1][2];
-
-			ck_assert_msg(
-					resultado_real_0_0 == valor_esperado_0_0
-							&& resultado_real_1_2 == valor_esperado_1_2
-							&& resulta_filas == filas_esperadas,
-					"Expecting %ld and %ld, got %ld and %ld",
-					valor_esperado_0_0, valor_esperado_1_2, resultado_real_0_0,
-					resultado_real_1_2);
-		} else {
-			write(ptyfd, cagada, strlen(cagada));
-		}
-
-	}END_TEST
-*/
 START_TEST( test_lee_matrix_long_stdin)
 	{
 
 		const char EOT[] = { 4, '\0' };
 // XXX: http://cboard.cprogramming.com/c-programming/113489-initializing-2d-array-c.html
-		const tipo_dato VALORES_ESPERADOS[3][3] = { { 10, 20, 30 }, { 100,
-				0, 0 }, { 1000, 2000, 0 } };
+		const tipo_dato VALORES_ESPERADOS[3][3] = { { 10, 20, 30 },
+				{ 100, 0, 0 }, { 1000, 2000, 0 } };
 
 		int ptyfd = 0;
 		int pid = 0;
@@ -97,7 +50,8 @@ START_TEST( test_lee_matrix_long_stdin)
 
 		int num_columnas[MAX_COLUMNAS_INPUT] = { 0 };
 		int num_columnas_esperado[MAX_COLUMNAS_INPUT] = { 0 };
-		tipo_dato resultados_reales[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT] = { { 0 } };
+		tipo_dato resultados_reales[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT] = {
+				{ 0 } };
 		char *apuntador_linea = NULL;
 		char cagada[MAX_FILAS_INPUT][TAM_MAX_LINEA] = { { '\0' } };
 
@@ -198,7 +152,7 @@ START_TEST( test_lee_matrix_long_stdin)
 //waitpid(pid, &i, WUNTRACED | WCONTINUED);
 //			wait(&i);
 			while (*resultado_assestment < 0) {
-				zlog_debug(c,"esperando el resultado del ijo d 1000 putas");
+				zlog_debug(c, "esperando el resultado del ijo d 1000 putas");
 				sleep(5);
 			}
 			zlog_debug(c, "ya regreso el ijo de 1000 putas %d", i);
@@ -214,9 +168,7 @@ START_TEST( test_lee_matrix_long_stdin)
 			zlog_debug(c_fork, "termino desmadre de mierda en hijo");
 			exit(3);
 		}
-	}
-
-END_TEST
+	}END_TEST
 
 Suite *
 cacacomun_suite(void) {
@@ -227,7 +179,8 @@ cacacomun_suite(void) {
 	tcase_set_timeout(tc_core, 600);
 //	tcase_add_test(tc_core, test_lee_matrix);
 //	tcase_add_test(tc_core, test_lee_matrix_stdin);
-	tcase_add_test(tc_core, test_lee_matrix_long_stdin);
+//	tcase_add_test(tc_core, test_lee_matrix_long_stdin);
+	tcase_add_test(tc_core, test_init_grapho);
 	suite_add_tcase(s, tc_core);
 
 	return s;
@@ -243,3 +196,67 @@ int main(void) {
 	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+/*
+ START_TEST( test_lee_matrix)
+ {
+
+ const char *nombre_archivo =
+ "/Users/ernesto/workspace/unos_locos/mierda.txt";
+ tipo_dato valor_esperado_0_0 = 1000000000000000;
+ tipo_dato valor_esperado_1_2 = 9007199254740992;
+ tipo_dato resultado_real_0_0 = 0;
+ tipo_dato resultado_real_1_2 = 0;
+ int filas_esperadas = 3;
+ int resulta_filas = 0;
+ tipo_dato matrix[MAX_COLUMNAS][MAX_FILAS];
+
+ lee_matriz_int_archivo(nombre_archivo, matrix, &resulta_filas);
+ resultado_real_0_0 = matrix[0][0];
+ resultado_real_1_2 = matrix[1][2];
+
+ ck_assert_msg(
+ resultado_real_0_0 == valor_esperado_0_0
+ && resultado_real_1_2 == valor_esperado_1_2
+ && resulta_filas == filas_esperadas,
+ "Expecting %ld and %ld, got %ld and %ld", valor_esperado_0_0,
+ valor_esperado_1_2, resultado_real_0_0, resultado_real_1_2);
+ }END_TEST
+
+ START_TEST( test_lee_matrix_stdin)
+ {
+
+ tipo_dato valor_esperado_0_0 = 1000000000000000;
+ tipo_dato valor_esperado_1_2 = 9007199254740992;
+ tipo_dato resultado_real_0_0 = 0;
+ tipo_dato resultado_real_1_2 = 0;
+ int filas_esperadas = 3;
+ int resulta_filas = 0;
+ tipo_dato matrix[MAX_COLUMNAS][MAX_FILAS];
+ int ptyfd = 0;
+ int pid = 0;
+ const char *cagada =
+ "1000000000000000 10000000000000000\n2 12\n9007199254740992 9007199254740992\n";
+
+ //XXX: http://stackoverflow.com/questions/5740176/how-do-i-write-a-testing-function-for-another-function-that-uses-stdin-input
+ pid = forkpty(&ptyfd, 0, 0, 0);
+ if (pid < 0)
+ perror("forkpty"), exit(1);
+ if (!pid) {
+ lee_matriz_long_stdin(matrix, &resulta_filas);
+ resultado_real_0_0 = matrix[0][0];
+ resultado_real_1_2 = matrix[1][2];
+
+ ck_assert_msg(
+ resultado_real_0_0 == valor_esperado_0_0
+ && resultado_real_1_2 == valor_esperado_1_2
+ && resulta_filas == filas_esperadas,
+ "Expecting %ld and %ld, got %ld and %ld",
+ valor_esperado_0_0, valor_esperado_1_2, resultado_real_0_0,
+ resultado_real_1_2);
+ } else {
+ write(ptyfd, cagada, strlen(cagada));
+ }
+
+ }END_TEST
+
+ */

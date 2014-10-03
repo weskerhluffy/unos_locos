@@ -33,6 +33,6 @@ unsigned long num_ant_cambio_bit(unsigned long numero, int pos_bit);
 unsigned long num_unos(unsigned long numero_1, unsigned long numero_2);
 
 int contar_caca(const char * nombre_archivo,
-		unsigned long conteo_unos[MAX_FILAS],int *filas_encontradas);
+		unsigned long conteo_unos[MAX_FILAS_INPUT],int *filas_encontradas);
 
 #endif /* UNOSLOCOS_H */

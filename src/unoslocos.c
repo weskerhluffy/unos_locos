@@ -159,8 +159,8 @@ unsigned long num_unos(unsigned long numero_1, unsigned long numero_2) {
 }
 
 int contar_caca(const char * nombre_archivo,
-		unsigned long conteo_unos[MAX_FILAS], int *filas_encontradas) {
-	unsigned long matrix[MAX_COLUMNAS][MAX_FILAS];
+		unsigned long conteo_unos[MAX_FILAS_INPUT], int *filas_encontradas) {
+	unsigned long matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT];
 	unsigned long num_unos_encontrados = 0;
 	int filas_encontradas_tmp = 0;
 	int indice_filas = 0;
