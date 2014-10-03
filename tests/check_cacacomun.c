@@ -7,25 +7,26 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
-#include <check.h>
 #include <util.h>
+#include <check.h>
 #include <zlog.h>
 #include "../src/cacacomun.h"
 
 static int *resultado_assestment = NULL;
 
+/*
 START_TEST( test_lee_matrix)
 	{
 
 		const char *nombre_archivo =
 				"/Users/ernesto/workspace/unos_locos/mierda.txt";
-		unsigned long valor_esperado_0_0 = 1000000000000000;
-		unsigned long valor_esperado_1_2 = 9007199254740992;
-		unsigned long resultado_real_0_0 = 0;
-		unsigned long resultado_real_1_2 = 0;
+		tipo_dato valor_esperado_0_0 = 1000000000000000;
+		tipo_dato valor_esperado_1_2 = 9007199254740992;
+		tipo_dato resultado_real_0_0 = 0;
+		tipo_dato resultado_real_1_2 = 0;
 		int filas_esperadas = 3;
 		int resulta_filas = 0;
-		unsigned long matrix[MAX_COLUMNAS][MAX_FILAS];
+		tipo_dato matrix[MAX_COLUMNAS][MAX_FILAS];
 
 		lee_matriz_int_archivo(nombre_archivo, matrix, &resulta_filas);
 		resultado_real_0_0 = matrix[0][0];
@@ -42,13 +43,13 @@ START_TEST( test_lee_matrix)
 START_TEST( test_lee_matrix_stdin)
 	{
 
-		unsigned long valor_esperado_0_0 = 1000000000000000;
-		unsigned long valor_esperado_1_2 = 9007199254740992;
-		unsigned long resultado_real_0_0 = 0;
-		unsigned long resultado_real_1_2 = 0;
+		tipo_dato valor_esperado_0_0 = 1000000000000000;
+		tipo_dato valor_esperado_1_2 = 9007199254740992;
+		tipo_dato resultado_real_0_0 = 0;
+		tipo_dato resultado_real_1_2 = 0;
 		int filas_esperadas = 3;
 		int resulta_filas = 0;
-		unsigned long matrix[MAX_COLUMNAS][MAX_FILAS];
+		tipo_dato matrix[MAX_COLUMNAS][MAX_FILAS];
 		int ptyfd = 0;
 		int pid = 0;
 		const char *cagada =
@@ -75,13 +76,13 @@ START_TEST( test_lee_matrix_stdin)
 		}
 
 	}END_TEST
-
+*/
 START_TEST( test_lee_matrix_long_stdin)
 	{
 
 		const char EOT[] = { 4, '\0' };
 // XXX: http://cboard.cprogramming.com/c-programming/113489-initializing-2d-array-c.html
-		const unsigned long VALORES_ESPERADOS[3][3] = { { 10, 20, 30 }, { 100,
+		const tipo_dato VALORES_ESPERADOS[3][3] = { { 10, 20, 30 }, { 100,
 				0, 0 }, { 1000, 2000, 0 } };
 
 		int ptyfd = 0;
@@ -92,13 +93,13 @@ START_TEST( test_lee_matrix_long_stdin)
 		int rc = 0;
 		int i = 0, j = 0;
 		int nums_escritos = 0;
-		unsigned long numero_actual = 0;
+		tipo_dato numero_actual = 0;
 
-		int num_columnas[MAX_FILAS] = { 0 };
-		int num_columnas_esperado[MAX_FILAS] = { 0 };
-		unsigned long resultados_reales[MAX_COLUMNAS][MAX_FILAS] = { { 0 } };
+		int num_columnas[MAX_COLUMNAS_INPUT] = { 0 };
+		int num_columnas_esperado[MAX_COLUMNAS_INPUT] = { 0 };
+		tipo_dato resultados_reales[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT] = { { 0 } };
 		char *apuntador_linea = NULL;
-		char cagada[MAX_FILAS][TAM_MAX_LINEA] = { { '\0' } };
+		char cagada[MAX_FILAS_INPUT][TAM_MAX_LINEA] = { { '\0' } };
 
 		zlog_category_t *c;
 		zlog_category_t *c_fork;
