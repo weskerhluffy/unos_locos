@@ -7,6 +7,7 @@
 
 #include <zlog.h>
 #include <stdarg.h> /* for va_list */
+#include <unistd.h>
 
 #ifndef CACACOMUN_H_
 #define CACACOMUN_H_
@@ -127,8 +128,8 @@ int lee_matriz_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 int lee_matrix_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 		int *num_filas, int *num_columnas);
 
-int imprime_matrix(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
-		int num_filas, int *num_columnas);
+int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
+		int num_columnas_fijo);
 
 int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 		bool usar_hashes);
@@ -156,5 +157,11 @@ static inline int grafo_comparar_nodos(nodo *nodo1, nodo *nodo2,
 		GRAFO_CRITERIOS_ORDENACION criterio_busqueda);
 
 void caca_log_debug_func(const char *format, ...);
+
+// XXX: https://www.securecoding.cert.org/confluence/display/seccode/MEM10-C.+Define+and+use+a+pointer+validation+function
+int apuntador_valido(void *p);
+
+// XXX: http://www.quora.com/Given-a-variable-how-can-you-find-whether-it-was-allocated-from-stack-or-from-heap-memory
+bool from_stack(void *ptr);
 
 #endif /* CACACOMUN_H_ */

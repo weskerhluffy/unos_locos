@@ -107,16 +107,40 @@ int lee_matrix_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 	return 0;
 }
 
-int imprime_matrix(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
-		int num_filas, int *num_columnas) {
+int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
+		int num_columnas_fijo) {
+	bool es_array = falso;
 	int i = 0, j = 0;
+	int num_columnas_actual = 0;
 	tipo_dato numero_actual = 0;
+	tipo_dato *matrix_array= NULL;
+	tipo_dato **matrix_pointer= NULL;
+
+	matrix_array= matrix;
+	matrix_pointer=matrix;
 
 	caca_log_debug("Me corto los webos");
 
-	for (i = 0; i < 3; i++) {
-		for (j = 0; j < 3; j++) {
-			numero_actual = *(*(matrix + i) + j);
+	caca_log_debug("pero q mierda void pointer %p", matrix);
+
+	es_array = !from_stack(matrix);
+
+	if (!num_columnas && !num_columnas_fijo) {
+		caca_log_debug("No mames no ay nada con q trabajar");
+	}
+
+	num_columnas_actual = num_columnas_fijo ? num_columnas_fijo : 0;
+
+	for (i = 0; i < num_filas; i++) {
+		if (num_columnas) {
+			num_columnas_actual = *(num_columnas + i);
+		}
+		for (j = 0; j < num_columnas_actual; j++) {
+			if (es_array) {
+				numero_actual = *(matrix_array+ i * num_columnas_actual + j);
+			} else {
+				numero_actual = *(*(matrix_pointer+ i) + j);
+			}
 			if (numero_actual) {
 				caca_log_debug("en %d %d el num %ld", i, j, numero_actual);
 			}
@@ -124,8 +148,13 @@ int imprime_matrix(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 	}
 
 	caca_log_debug("El # de filas %d", num_filas);
-	for (i = 0; i < num_filas; i++) {
-		caca_log_debug("en fila %d, columnas %d", i, *(num_columnas + i));
+	if (num_columnas) {
+		for (i = 0; i < num_filas; i++) {
+			caca_log_debug("en fila %d, columnas %d", i, *(num_columnas + i));
+		}
+	} else {
+		caca_log_debug("num  d columnas para todas las filas %d",
+				num_columnas_fijo);
 	}
 
 	return 0;
@@ -136,10 +165,11 @@ int imprime_matrix(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
  usar_hashes) */
 int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 		bool usar_hashes) {
-	int i = 0, j = 0, k = 0;
-	tipo_dato **matrix_int = NULL;
+	int i = 0, j = 0;
+// XXX: http://stackoverflow.com/questions/11454376/cast-void-pointer-to-integer-array
+	tipo_dato (*matrix_int)[3] = NULL;
 
-	matrix_int = (tipo_dato **) matrix;
+	matrix_int = (tipo_dato (*)[3]) matrix;
 	caca_log_debug("despues de acer el cacast");
 
 //	memset((void * )ctx, 0, sizeof(grafo_contexto));
@@ -147,15 +177,17 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 //	memset((void * )ctx->matrix_distancias, MAX_VALOR,
 //			sizeof(ctx->matrix_distancias));
 	caca_log_debug("despues de inicializar contexto %s", "mierdadsdsadsa");
-	zlog_debug(cacategoria, "la mierda %s %d", "wwww", k);
 
-	for (j = 0; j < num_filas; j++) {
-		for (i = 0; i < 3; i++) {
-			caca_log_debug("recorriendo mierda %d,%d %d", j, i, k);
+	for (i = 0; i < num_filas; i++) {
+		for (j = 0; j < 3; j++) {
+			caca_log_debug("recorriendo mierda %d,%d desde %p", i, j,
+					matrix_int);
 			caca_log_debug("en pos %d,%d el valor %ld", i, j,
 					*(*(matrix_int + i) + j));
 		}
 	}
+
+	imprime_matrix(matrix, num_filas, NULL, 3);
 
 	return (0);
 }
@@ -409,7 +441,8 @@ static inline int grafo_comparar_nodos(nodo *nodo1, nodo *nodo2,
 void caca_log_debug_func(const char *format, ...) {
 	va_list arg;
 	va_list arg2;
-	const char *HEADER = "archivo: %s; funcion: %s; linea %d; nivel: %d caca 8====D ";
+	const char *HEADER =
+			"archivo: %s; funcion: %s; linea %d; nivel: %zd caca 8====D ";
 	char formato[MAX_TAM_CADENA + sizeof(HEADER)];
 
 	strcpy(formato, HEADER);
@@ -442,4 +475,14 @@ static inline char *nodo_a_cadena(nodo *node, char *cadena_buffer) {
 	sprintf(cadena_buffer, "{valor:%ld,indice:%ld,distancia:%ld}", node->valor,
 			node->indice, node->distancia);
 	return cadena_buffer;
+}
+
+int apuntador_valido(void *p) {
+//	extern char _etext;
+//	return (p != NULL ) && ((char*) p > &_etext);
+	return (p != NULL );
+}
+
+bool from_stack(void *ptr) {
+	return ptr > sbrk(0);
 }

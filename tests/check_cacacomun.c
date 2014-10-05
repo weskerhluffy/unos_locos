@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <util.h>
+#include <execinfo.h>
 #include <check.h>
 #include <zlog.h>
 #include "../src/cacacomun.h"
@@ -22,6 +23,8 @@ START_TEST( test_init_grapho)
 		int filas = 3;
 		int resultado = 0;
 		grafo_contexto ctx;
+
+		caca_log_debug("los valores %p", VALORES);
 
 		resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero);
 
@@ -124,7 +127,7 @@ START_TEST( test_lee_matrix_long_stdin)
 			lee_matrix_long_stdin(resultados_reales, &num_filas, num_columnas);
 
 			zlog_debug(c_fork, "antes d imprimir resultados reales");
-			imprime_matrix(resultados_reales, num_filas, num_columnas);
+			imprime_matrix(resultados_reales, num_filas, num_columnas, 0);
 			zlog_debug(c_fork, "despues d imprimir resultados reales");
 
 			*resultado_assestment = !memcmp(resultados_reales,
@@ -170,6 +173,73 @@ START_TEST( test_lee_matrix_long_stdin)
 		}
 	}END_TEST
 
+START_TEST( test_apuntador_arreglo)
+	{
+
+		const tipo_dato VALORES[3][3] = { { 10, 20, 30 }, { 100, 200, 300 }, {
+				1000, 2000, 3000 } };
+		void *ptr = NULL;
+
+		ptr = (void *) VALORES;
+
+		zlog_fini();
+
+		ck_assert_msg(!from_stack(ptr), "El valor %p no es apuntador valido",
+				ptr);
+	}END_TEST
+
+START_TEST( test_apuntador_allocado)
+	{
+
+		tipo_dato **valores = NULL;
+
+		valores = (tipo_dato **) malloc(3 * sizeof(tipo_dato *));
+
+		for (int i = 0; i < 3; i++) {
+			*(valores + i) = (tipo_dato *) malloc(10 * sizeof(tipo_dato));
+		}
+
+		zlog_fini();
+
+		ck_assert_msg(from_stack(*valores),
+				"El valor %p no es apuntador valido", *valores);
+	}END_TEST
+
+START_TEST( test_imprime_apuntador)
+	{
+
+		tipo_dato **valores = NULL;
+
+		valores = (tipo_dato **) malloc(3 * sizeof(tipo_dato *));
+
+		for (int i = 0; i < 3; i++) {
+			*(valores + i) = (tipo_dato *) malloc(10 * sizeof(tipo_dato));
+			for (int j = 0; j < 10; j++) {
+				*(*(valores + i) + j) = i * j;
+			}
+		}
+
+		zlog_fini();
+
+		ck_assert_msg(!imprime_matrix(valores,3,NULL,10),
+				"El valor %p no se pudo imprimir como arreglo", valores);
+	}END_TEST
+
+START_TEST( test_imprime_array)
+	{
+
+		const tipo_dato VALORES[3][3] = { { 10, 20, 30 }, { 100, 200, 300 }, {
+				1000, 2000, 3000 } };
+		void *ptr = NULL;
+
+		ptr = (void *) VALORES;
+
+		zlog_fini();
+
+		ck_assert_msg(!imprime_matrix(ptr,3,NULL,3),
+				"El valor %p no es apuntador valido", ptr);
+	}END_TEST
+
 Suite *
 cacacomun_suite(void) {
 	Suite *s = suite_create("Caca comun");
@@ -180,6 +250,10 @@ cacacomun_suite(void) {
 //	tcase_add_test(tc_core, test_lee_matrix);
 //	tcase_add_test(tc_core, test_lee_matrix_stdin);
 //	tcase_add_test(tc_core, test_lee_matrix_long_stdin);
+	tcase_add_test(tc_core, test_apuntador_arreglo);
+	tcase_add_test(tc_core, test_apuntador_allocado);
+	tcase_add_test(tc_core, test_imprime_apuntador);
+	tcase_add_test(tc_core, test_imprime_array);
 	tcase_add_test(tc_core, test_init_grapho);
 	suite_add_tcase(s, tc_core);
 
