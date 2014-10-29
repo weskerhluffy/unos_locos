@@ -18,8 +18,8 @@ static int *resultado_assestment = NULL;
 START_TEST( test_init_grapho)
 	{
 
-		const tipo_dato VALORES[3][3] = { { 10, 20, 30 }, { 100, 200, 300 }, {
-				1000, 2000, 3000 } };
+		const tipo_dato VALORES[3][3] = { { 1, 2, 3 }, { 2, 1, 330 }, {
+				3, 1, 50} };
 		int filas = 3;
 		int resultado = 0;
 		grafo_contexto ctx;
@@ -28,6 +28,7 @@ START_TEST( test_init_grapho)
 
 		resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero);
 
+		imprimir_lista_adjacencia(ctx.inicio);
 		zlog_fini();
 
 		ck_assert_msg(!resultado, "todo en orden %s", resultado);

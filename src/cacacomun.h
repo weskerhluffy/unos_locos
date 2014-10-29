@@ -38,6 +38,10 @@
 
 #define MAX_VALOR (tipo_dato) (2<<28)
 
+#define GRAFO_NODO_ORIGEN 0
+#define GRAFO_NODO_DESTINO 1
+#define GRAFO_DISTANCIA_ENTRE_NODOS 2
+
 typedef enum BOOLEANOS {
 	falso = 0, verdadero
 } bool;
@@ -51,7 +55,7 @@ typedef enum BOOLEANOS {
 	} \
 
 
-#define GRAFO_AVANZAR_NODO(nodo_apuntador,criterio_busqueda) \
+#define GRAFO_AVANZAR_NODO(nodo_apuntador,criterio_busqueda,discriminar_principal) \
 		switch (criterio_busqueda) { \
 	 	case GRAFO_VALOR: \
 			nodo_actual = nodo_actual->siguiente_valor; \
@@ -61,6 +65,39 @@ typedef enum BOOLEANOS {
 			break; \
 		case GRAFO_INDICE: \
 			nodo_actual = nodo_actual->siguiente_indice; \
+			break; \
+		case GRAFO_PRINCIPAL: \
+			if(!discriminar_principal) { \
+				nodo_actual = nodo_actual->siguiente; \
+			} \
+			break; \
+		default: \
+			perror("en GRAFO_AVANZAR_NODO  hubo un error culero al buscar"); \
+			break; \
+		}
+
+#define GRAFO_COPIA_NODO_DATOS(nodo_origen,nodo_destino) \
+		nodo_destino->valor=nodo_destino->valor; \
+		nodo_destino->distancia=nodo_destino->distancia; \
+		nodo_destino->indice=nodo_destino->indice;
+
+#define GRAFO_NODO_SIG_ANT(nodo_anterior,nodo_siguiente,nodo_actual,criterio_busqueda) \
+		switch (criterio_busqueda) { \
+	 	case GRAFO_VALOR: \
+			nodo_siguiente= (nodo_actual)->siguiente_valor; \
+			nodo_anterior= (nodo_actual)->anterior_valor; \
+			break; \
+		case GRAFO_DISTANCIA: \
+			nodo_siguiente= (nodo_actual)->siguiente_distancia; \
+			nodo_anterior= (nodo_actual)->anterior_distancia; \
+			break; \
+		case GRAFO_INDICE: \
+			nodo_siguiente= (nodo_actual)->siguiente_indice; \
+			nodo_anterior= (nodo_actual)->anterior_indice; \
+			break; \
+		case GRAFO_PRINCIPAL: \
+			nodo_siguiente= (nodo_actual)->siguiente; \
+			nodo_anterior= (nodo_actual)->anterior; \
 			break; \
 		default: \
 			perror("en GRAFO_AVANZAR_NODO  hubo un error culero al buscar"); \
@@ -78,9 +115,13 @@ typedef enum BOOLEANOS {
 		while(0)
 
 // XXX: http://www.programiz.com/c-programming/c-enumeration
+#undef  ADDITEM
+#define ADDITEM( criterio_ordenacion, comentario) criterio_ordenacion
 typedef enum GRAFO_CRITERIOS_ORDENACION {
-	GRAFO_INDICE, GRAFO_VALOR, GRAFO_DISTANCIA
+#include "tipos_ordenacion.h"
 } GRAFO_CRITERIOS_ORDENACION;
+#undef  ADDITEM
+
 typedef enum GRAFO_TIPO_RESULTADO_BUSQUEDA {
 	GRAFO_NADA_ENCONTRADO,
 	GRAFO_NODO_ENCONTRADO,
@@ -91,6 +132,10 @@ typedef struct nodo {
 	tipo_dato valor;
 	tipo_dato indice;
 	tipo_dato distancia;
+	int num_nodos_asociados;
+	int num_nodos_asociados_indice;
+	int num_nodos_asociados_valor;
+	int num_nodos_asociados_distancia;
 	struct nodo *siguiente;
 	struct nodo *anterior;
 	struct nodo *siguiente_indice;
@@ -106,11 +151,17 @@ typedef struct grifo_contexto {
 	nodo *inicio;
 	nodo nodos_disponibles[MAX_NODOS];
 	tipo_dato matrix_distancias[MAX_COLUMNAS_NODOS][MAX_FILAS_NODOS];
-	tipo_dato referencias_nodos_por_indice[MAX_FILAS_NODOS];
+	nodo *referencias_nodos_por_indice[MAX_FILAS_NODOS];
 } grafo_contexto;
 
 zlog_category_t *cacategoria = NULL;
 
+#undef ADDITEM
+#define ADDITEM( criterio_ordenacion, comentario) [criterio_ordenacion]=comentario
+const char* NOMBRES_CRITERIOS_ORDENACION[GRAFO_PRINCIPAL+1] = {
+#include "tipos_ordenacion.h"
+		};
+#undef ADDITEM
 int lee_matriz_int_archivo(const char * nombre_archivo,
 		tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT], int *filas);
 
@@ -134,24 +185,25 @@ int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 		bool usar_hashes);
 
-nodo *grafo_alloc(grafo_contexto *ctx, int localidades_solicitadas);
+nodo *grafo_nodo_alloc(grafo_contexto *ctx, int localidades_solicitadas);
 
 // XXX: http://stackoverflow.com/questions/742699/returning-an-enum-from-a-function-in-c
-GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_lineal(grafo_contexto *ctx,
+GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_lineal(nodo *inicio, nodo *nodo_a_buscar,
+		GRAFO_CRITERIOS_ORDENACION criterio_busqueda, void *nodos_encontrados,
+		int limite_nodos_busqueda);
+
+GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria(nodo *inicio,
 		nodo *nodo_a_buscar, GRAFO_CRITERIOS_ORDENACION criterio_busqueda,
 		void *nodos_encontrados);
 
-GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria(grafo_contexto *ctx,
+GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
 		nodo *nodo_a_buscar, GRAFO_CRITERIOS_ORDENACION criterio_busqueda,
-		void *nodos_encontrados);
-
-GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_lineal_lista_nodos(nodo *inicio,
-		nodo *nodo_a_buscar, GRAFO_CRITERIOS_ORDENACION criterio_busqueda,
-		void *nodos_encontrados, int limite_nodos_busqueda);
+		void *nodos_encontrados, int indice_inicial, int indice_final);
 
 void init_zlog(const char *arch_conf);
 
-static inline char *nodo_a_cadena(nodo *node, char *cadena_buffer);
+static inline char *grafo_nodo_a_cadena(nodo *node, char *cadena_buffer,
+		int *characteres_escritos);
 
 static inline int grafo_comparar_nodos(nodo *nodo1, nodo *nodo2,
 		GRAFO_CRITERIOS_ORDENACION criterio_busqueda);
@@ -164,4 +216,14 @@ int apuntador_valido(void *p);
 // XXX: http://www.quora.com/Given-a-variable-how-can-you-find-whether-it-was-allocated-from-stack-or-from-heap-memory
 bool from_stack(void *ptr);
 
+void grafo_insertar_nodo(nodo *nodo_anterior, nodo *nodo_siguiente,
+		nodo *nodo_a_insertar, GRAFO_CRITERIOS_ORDENACION criterio_busqueda);
+
+void grafo_anadir_nodo(nodo *nodo_inicial, nodo *nodo_a_anadir,
+		GRAFO_CRITERIOS_ORDENACION criterio_busqueda);
+
+void imprimir_lista_adjacencia(nodo *nodo_inicial);
+
+static inline int *grafo_apuntador_num_nodos_asociados(nodo *nodo,
+		GRAFO_CRITERIOS_ORDENACION criterio_busqueda);
 #endif /* CACACOMUN_H_ */
