@@ -228,9 +228,9 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 						GRAFO_PRINCIPAL))++;
 			}
 			*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
-					GRAFO_INDICE) = 0;
+					GRAFO_INDICE) = -1;
 			*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
-					GRAFO_DISTANCIA) = 0;
+					GRAFO_DISTANCIA) = -1;
 			break;
 		case GRAFO_NADA_ENCONTRADO:
 			nodo_origen_actual = grafo_nodo_alloc(ctx, 1);
@@ -239,13 +239,14 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 			*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
 					GRAFO_PRINCIPAL) = 0;
 			*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
-					GRAFO_INDICE) = 0;
+					GRAFO_INDICE) = -1;
 			*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
-					GRAFO_DISTANCIA) = 0;
+					GRAFO_DISTANCIA) = -1;
 			caca_log_debug("Se inicia la lista de nodos en ctx");
 			break;
 		default:
 			perror("no se pudo configurar ctx d graph");
+			exit(1);
 			break;
 		}
 
@@ -305,49 +306,55 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_lineal(nodo *inicio, nodo *nodo_a_buscar,
 	nodos_encontrados_int = ((nodo **) nodos_encontrados);
 
 	nodo_actual = inicio;
-	GRAFO_AVANZAR_NODO(nodo_actual, criterio_busqueda, verdadero);
+//	GRAFO_AVANZAR_NODO(nodo_actual, criterio_busqueda, verdadero);
 
 	caca_log_debug("nodo inicial %p, nodo a buscar %p, limite de buskeda %d",
 			inicio, nodo_a_buscar, limite_nodos_busqueda);
 
-	while (nodo_actual && num_nodos_recorridos < limite_nodos_busqueda) {
-		caca_log_debug("Comparando actual %s con el q c busca %s",
+	while (nodo_actual && num_nodos_recorridos < limite_nodos_busqueda
+			&& tipo_resultado == GRAFO_NADA_ENCONTRADO) {
+		caca_log_debug(
+				"Comparando actual %s con el q c busca %s con criterio %s",
 				grafo_nodo_a_cadena(nodo_actual,buffer,NULL),
-				grafo_nodo_a_cadena(nodo_a_buscar,buffer1,NULL));
+				grafo_nodo_a_cadena(nodo_a_buscar,buffer1,NULL),
+				GRAFO_NOMBRES_CRITERIOS_ORDENACION[criterio_busqueda]);
 		switch (criterio_busqueda) {
 		case GRAFO_VALOR:
 			nodo_anterior = nodo_actual;
 			if (nodo_actual->valor == nodo_a_buscar->valor) {
 				tipo_resultado = GRAFO_NODO_ENCONTRADO;
-				break;
+				continue;
 			}
-			if (nodo_actual->valor >= nodo_a_buscar->valor) {
+			if (nodo_actual->valor > nodo_a_buscar->valor) {
 				tipo_resultado = GRAFO_NODOS_PRE_POST_ENCONTRADOS;
-				break;
+				continue;
 			}
 			nodo_actual = nodo_actual->siguiente_valor;
 			break;
 		case GRAFO_DISTANCIA:
 			nodo_anterior = nodo_actual;
+			caca_log_debug("Se asigno nodo anterior en distancia");
 			if (nodo_actual->distancia == nodo_a_buscar->distancia) {
 				tipo_resultado = GRAFO_NODO_ENCONTRADO;
-				break;
+				continue;
 			}
-			if (nodo_actual->distancia >= nodo_a_buscar->distancia) {
+			if (nodo_actual->distancia > nodo_a_buscar->distancia) {
 				tipo_resultado = GRAFO_NODOS_PRE_POST_ENCONTRADOS;
-				break;
+				continue;
 			}
 			nodo_actual = nodo_actual->siguiente_distancia;
+			caca_log_debug("Avanzado en distancia con tipo resultado %d",
+					tipo_resultado);
 			break;
 		case GRAFO_INDICE:
 			nodo_anterior = nodo_actual;
 			if (nodo_actual->indice == nodo_a_buscar->indice) {
 				tipo_resultado = GRAFO_NODO_ENCONTRADO;
-				break;
+				continue;
 			}
-			if (nodo_actual->indice >= nodo_a_buscar->indice) {
+			if (nodo_actual->indice > nodo_a_buscar->indice) {
 				tipo_resultado = GRAFO_NODOS_PRE_POST_ENCONTRADOS;
-				break;
+				continue;
 			}
 			nodo_actual = nodo_actual->siguiente_indice;
 			break;
@@ -355,18 +362,24 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_lineal(nodo *inicio, nodo *nodo_a_buscar,
 			nodo_anterior = nodo_actual;
 			if (nodo_actual->indice == nodo_a_buscar->indice) {
 				tipo_resultado = GRAFO_NODO_ENCONTRADO;
-				break;
+				continue;
 			}
-			if (nodo_actual->indice >= nodo_a_buscar->indice) {
+			if (nodo_actual->indice > nodo_a_buscar->indice) {
 				tipo_resultado = GRAFO_NODOS_PRE_POST_ENCONTRADOS;
-				break;
+				continue;
 			}
 			nodo_actual = nodo_actual->siguiente;
 			break;
 		default:
 			perror("en busqueda lineal hubo un error culero al buscar");
+			exit(1);
 			break;
 		}
+		caca_log_debug("Salio del case con %d", tipo_resultado);
+		num_nodos_recorridos++;
+	}
+
+	if (tipo_resultado != GRAFO_NADA_ENCONTRADO) {
 		num_nodos_recorridos++;
 	}
 
@@ -464,8 +477,8 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria(nodo *inicio,
 
 	caca_log_debug("Despues de creaer el arreglo temporal");
 
-	tipo_resultado = busqueda_binaria_recursiva(inicio, nodo_a_buscar,
-			criterio_busqueda, nodos_encontrados, 0,
+	tipo_resultado = busqueda_binaria_recursiva(inicio, arreglo_nodos_tmp,
+			nodo_a_buscar, criterio_busqueda, nodos_encontrados, 0,
 			*grafo_apuntador_num_nodos_asociados(inicio, criterio_busqueda));
 
 	caca_log_debug("Al salir %d", tipo_resultado);
@@ -474,8 +487,9 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria(nodo *inicio,
 }
 
 GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
-		nodo *nodo_a_buscar, GRAFO_CRITERIOS_ORDENACION criterio_busqueda,
-		void *nodos_encontrados, int indice_inicial, int indice_final) {
+		nodo **arreglo_nodos, nodo *nodo_a_buscar,
+		GRAFO_CRITERIOS_ORDENACION criterio_busqueda, void *nodos_encontrados,
+		int indice_inicial, int indice_final) {
 	int resultado_comparacion = 0;
 	int indice_medio = 0;
 	GRAFO_TIPO_RESULTADO_BUSQUEDA tipo_resultado = GRAFO_NADA_ENCONTRADO;
@@ -487,22 +501,23 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
 			indice_final);
 	caca_log_debug("nodo inicial %p, nodo a buscar %p", inicio, nodo_a_buscar);
 
-	if ((indice_final - indice_inicial) < 2) {
-		caca_log_debug("buscando linealmento, ventana menor a donas");
-		tipo_resultado = busqueda_lineal(inicio, nodo_a_buscar,
-				criterio_busqueda, nodos_encontrados,
+	if ((indice_final - indice_inicial) <= GRAFO_LIMITE_ORDENACION_LINEAL) {
+		caca_log_debug("buscando linealmento, ventana menor a %d",
+				GRAFO_LIMITE_ORDENACION_LINEAL);
+		tipo_resultado = busqueda_lineal(*(arreglo_nodos + indice_inicial),
+				nodo_a_buscar, criterio_busqueda, nodos_encontrados,
 				indice_final - indice_inicial + 1);
 	} else {
 		indice_medio = (indice_inicial + indice_final) / 2;
 		resultado_comparacion = grafo_comparar_nodos(nodo_a_buscar,
-				(inicio + indice_medio), criterio_busqueda) == 0;
+				*(arreglo_nodos + indice_medio), criterio_busqueda);
 		caca_log_debug("comparando nodo %s con %s (posicion %d), resultado %d",
 				grafo_nodo_a_cadena(nodo_a_buscar, cadena1,NULL),
-				grafo_nodo_a_cadena((inicio + indice_medio), cadena2,NULL),
+				grafo_nodo_a_cadena(*(arreglo_nodos + indice_medio), cadena2,NULL),
 				indice_medio, resultado_comparacion);
 		if (resultado_comparacion == 0) {
 			tipo_resultado = GRAFO_NODO_ENCONTRADO;
-			*nodos_encontrados_int = (inicio + indice_medio);
+			*nodos_encontrados_int = *(arreglo_nodos + indice_medio);
 		} else {
 			if (resultado_comparacion == -1) {
 				indice_final = indice_medio - 1;
@@ -511,13 +526,15 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
 					indice_inicial = indice_medio + 1;
 				} else {
 					perror("What the fuck?? busqueda_binaria_recursiva");
+					exit(1);
 				}
 			}
-			caca_log_debug("recursividad inicio %d final %d", indice_inicial,
-					indice_final);
-			tipo_resultado = busqueda_binaria_recursiva(inicio, nodo_a_buscar,
-					criterio_busqueda, nodos_encontrados, indice_inicial,
-					indice_final);
+			caca_log_debug(
+					"recursividad arreglo_nodos %d final %d, el medio es %d",
+					indice_inicial, indice_final, indice_medio);
+			tipo_resultado = busqueda_binaria_recursiva(inicio, arreglo_nodos,
+					nodo_a_buscar, criterio_busqueda, nodos_encontrados,
+					indice_inicial, indice_final);
 			caca_log_debug("recursividad resultado %d ", tipo_resultado);
 		}
 	}
@@ -695,8 +712,6 @@ void grafo_insertar_nodo(nodo *nodo_anterior, nodo *nodo_siguiente,
 	*nodo_a_insertar_anterior = nodo_anterior;
 	caca_log_debug("nodo %p entre %p y %p", nodo_a_insertar, nodo_anterior,
 			nodo_siguiente);
-	caca_log_debug("finalmente, siguiente quedo %p, anterior %p",
-			nodo_a_insertar->siguiente, nodo_a_insertar->anterior);
 }
 
 void grafo_anadir_nodo(nodo *nodo_inicial, nodo *nodo_a_anadir,
@@ -704,12 +719,25 @@ void grafo_anadir_nodo(nodo *nodo_inicial, nodo *nodo_a_anadir,
 	GRAFO_TIPO_RESULTADO_BUSQUEDA tipo_resultado;
 	nodo *nodo_anterior = NULL;
 	nodo *nodo_siguiente = NULL;
+	nodo *nodo_inicial_tmp = NULL;
 	nodo *nodos_encontrados[2] = { NULL };
 
 	caca_log_debug("Anadiendo nodo %p a lista %p de %s", nodo_a_anadir,
-			nodo_inicial, NOMBRES_CRITERIOS_ORDENACION[criterio_busqueda]);
+			nodo_inicial,
+			GRAFO_NOMBRES_CRITERIOS_ORDENACION[criterio_busqueda]);
 
-	tipo_resultado = busqueda_binaria(nodo_inicial, nodo_a_anadir,
+	nodo_inicial_tmp = nodo_inicial;
+
+	if (criterio_busqueda != GRAFO_PRINCIPAL) {
+		GRAFO_AVANZAR_NODO(nodo_inicial_tmp, criterio_busqueda, verdadero);
+		if (nodo_inicial_tmp) {
+			*grafo_apuntador_num_nodos_asociados(nodo_inicial_tmp,
+					criterio_busqueda) = *grafo_apuntador_num_nodos_asociados(
+					nodo_inicial, criterio_busqueda);
+		}
+	}
+
+	tipo_resultado = busqueda_binaria(nodo_inicial_tmp, nodo_a_anadir,
 			criterio_busqueda, (void *) &nodos_encontrados);
 
 	switch (tipo_resultado) {
@@ -757,8 +785,9 @@ void imprimir_lista_adjacencia(nodo *nodo_inicial) {
 				grafo_nodo_a_cadena(nodo_adjacente_actual, ap_cadena,
 						&caracteres_escritos));
 
-		strcpy(ap_cadena, NOMBRES_CRITERIOS_ORDENACION[GRAFO_DISTANCIA]);
-		ap_cadena += strlen(NOMBRES_CRITERIOS_ORDENACION[GRAFO_DISTANCIA]);
+		strcpy(ap_cadena, GRAFO_NOMBRES_CRITERIOS_ORDENACION[GRAFO_DISTANCIA]);
+		ap_cadena += strlen(
+				GRAFO_NOMBRES_CRITERIOS_ORDENACION[GRAFO_DISTANCIA]);
 
 		nodo_adjacente_actual = nodo_actual->siguiente_distancia;
 		while (nodo_adjacente_actual) {
@@ -777,8 +806,8 @@ void imprimir_lista_adjacencia(nodo *nodo_inicial) {
 
 		ap_cadena = buffer;
 
-		strcpy(ap_cadena, NOMBRES_CRITERIOS_ORDENACION[GRAFO_DISTANCIA]);
-		ap_cadena += strlen(NOMBRES_CRITERIOS_ORDENACION[GRAFO_DISTANCIA]);
+		strcpy(ap_cadena, GRAFO_NOMBRES_CRITERIOS_ORDENACION[GRAFO_INDICE]);
+		ap_cadena += strlen(GRAFO_NOMBRES_CRITERIOS_ORDENACION[GRAFO_INDICE]);
 
 		nodo_adjacente_actual = nodo_actual->siguiente_indice;
 		while (nodo_adjacente_actual) {

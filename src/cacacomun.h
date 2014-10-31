@@ -42,6 +42,8 @@
 #define GRAFO_NODO_DESTINO 1
 #define GRAFO_DISTANCIA_ENTRE_NODOS 2
 
+#define GRAFO_LIMITE_ORDENACION_LINEAL 2
+
 typedef enum BOOLEANOS {
 	falso = 0, verdadero
 } bool;
@@ -58,17 +60,17 @@ typedef enum BOOLEANOS {
 #define GRAFO_AVANZAR_NODO(nodo_apuntador,criterio_busqueda,discriminar_principal) \
 		switch (criterio_busqueda) { \
 	 	case GRAFO_VALOR: \
-			nodo_actual = nodo_actual->siguiente_valor; \
+			nodo_apuntador = (nodo_apuntador)->siguiente_valor; \
 			break; \
 		case GRAFO_DISTANCIA: \
-			nodo_actual = nodo_actual->siguiente_distancia; \
+			nodo_apuntador = (nodo_apuntador)->siguiente_distancia; \
 			break; \
 		case GRAFO_INDICE: \
-			nodo_actual = nodo_actual->siguiente_indice; \
+			nodo_apuntador = (nodo_apuntador)->siguiente_indice; \
 			break; \
 		case GRAFO_PRINCIPAL: \
 			if(!discriminar_principal) { \
-				nodo_actual = nodo_actual->siguiente; \
+				nodo_apuntador = (nodo_apuntador)->siguiente; \
 			} \
 			break; \
 		default: \
@@ -158,7 +160,7 @@ zlog_category_t *cacategoria = NULL;
 
 #undef ADDITEM
 #define ADDITEM( criterio_ordenacion, comentario) [criterio_ordenacion]=comentario
-const char* NOMBRES_CRITERIOS_ORDENACION[GRAFO_PRINCIPAL+1] = {
+const char* GRAFO_NOMBRES_CRITERIOS_ORDENACION[GRAFO_PRINCIPAL+1] = {
 #include "tipos_ordenacion.h"
 		};
 #undef ADDITEM
@@ -197,8 +199,9 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria(nodo *inicio,
 		void *nodos_encontrados);
 
 GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
-		nodo *nodo_a_buscar, GRAFO_CRITERIOS_ORDENACION criterio_busqueda,
-		void *nodos_encontrados, int indice_inicial, int indice_final);
+		nodo **arreglo_nodos, nodo *nodo_a_buscar,
+		GRAFO_CRITERIOS_ORDENACION criterio_busqueda, void *nodos_encontrados,
+		int indice_inicial, int indice_final) ;
 
 void init_zlog(const char *arch_conf);
 

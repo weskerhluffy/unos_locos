@@ -18,8 +18,8 @@ static int *resultado_assestment = NULL;
 START_TEST( test_init_grapho)
 	{
 
-		const tipo_dato VALORES[3][3] = { { 1, 2, 3 }, { 2, 1, 330 }, {
-				3, 1, 50} };
+		const tipo_dato VALORES[3][3] = { { 1, 2, 3 }, { 2, 1, 330 },
+				{ 3, 1, 50 } };
 		int filas = 3;
 		int resultado = 0;
 		grafo_contexto ctx;
@@ -241,6 +241,26 @@ START_TEST( test_imprime_array)
 				"El valor %p no es apuntador valido", ptr);
 	}END_TEST
 
+START_TEST( test_init_grapho_busq_bin)
+	{
+
+		const tipo_dato VALORES[9][3] = { { 1, 2, 66 }, { 2, 1, 330 }, { 3, 1,
+				50 }, { 1, 4, 3 }, { 4, 2, 8 }, { 2, 4, 74 }, { 1, 5, 90 }, { 1,
+				6, 12 }, { 1, 7, 83 } };
+		int filas = 9;
+		int resultado = 0;
+		grafo_contexto ctx;
+
+		caca_log_debug("los valores %p", VALORES);
+
+		resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero);
+
+		imprimir_lista_adjacencia(ctx.inicio);
+		zlog_fini();
+
+		ck_assert_msg(!resultado, "todo en orden %s", resultado);
+	}END_TEST
+
 Suite *
 cacacomun_suite(void) {
 	Suite *s = suite_create("Caca comun");
@@ -256,6 +276,7 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_imprime_apuntador);
 	tcase_add_test(tc_core, test_imprime_array);
 	tcase_add_test(tc_core, test_init_grapho);
+	tcase_add_test(tc_core, test_init_grapho_busq_bin);
 	suite_add_tcase(s, tc_core);
 
 	return s;
