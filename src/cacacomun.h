@@ -160,7 +160,7 @@ zlog_category_t *cacategoria = NULL;
 
 #undef ADDITEM
 #define ADDITEM( criterio_ordenacion, comentario) [criterio_ordenacion]=comentario
-const char* GRAFO_NOMBRES_CRITERIOS_ORDENACION[GRAFO_PRINCIPAL+1] = {
+const char* GRAFO_NOMBRES_CRITERIOS_ORDENACION[GRAFO_PRINCIPAL + 1] = {
 #include "tipos_ordenacion.h"
 		};
 #undef ADDITEM
@@ -185,7 +185,7 @@ int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 		int num_columnas_fijo);
 
 int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
-		bool usar_hashes);
+		bool usar_hashes, bool relaciones_bidireccionales);
 
 nodo *grafo_nodo_alloc(grafo_contexto *ctx, int localidades_solicitadas);
 
@@ -201,7 +201,7 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria(nodo *inicio,
 GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
 		nodo **arreglo_nodos, nodo *nodo_a_buscar,
 		GRAFO_CRITERIOS_ORDENACION criterio_busqueda, void *nodos_encontrados,
-		int indice_inicial, int indice_final) ;
+		int indice_inicial, int indice_final);
 
 void init_zlog(const char *arch_conf);
 

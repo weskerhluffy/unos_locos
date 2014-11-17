@@ -26,7 +26,8 @@ START_TEST( test_init_grapho)
 
 		caca_log_debug("los valores %p", VALORES);
 
-		resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero);
+		resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero,
+				verdadero);
 
 		imprimir_lista_adjacencia(ctx.inicio);
 		zlog_fini();
@@ -244,16 +245,28 @@ START_TEST( test_imprime_array)
 START_TEST( test_init_grapho_busq_bin)
 	{
 
-		const tipo_dato VALORES[9][3] = { { 1, 2, 66 }, { 2, 1, 330 }, { 3, 1,
-				50 }, { 1, 4, 3 }, { 4, 2, 8 }, { 2, 4, 74 }, { 1, 5, 90 }, { 1,
-				6, 12 }, { 1, 7, 83 } };
-		int filas = 9;
+		const tipo_dato VALORES[12][3] = { { 1, 2, 66 }, { 2, 8, 330 }, { 3, 1,
+				50 }, { 1, 4, 3 }, { 4, 2, 8 }, { 2, 9, 74 }, { 1, 5, 90 }, { 1,
+				6, 12 }, { 1, 7, 83 }, { 8, 3, 45 }, { 8, 5, 5 }, { 5, 7, 53 } };
+		/*
+		 * 1 8=====D 2 3 4 5 6 7
+		 * 2 8=====D 1 8 4 9
+		 * 3 8=====D 1 8
+		 * 4 8=====D 1 2
+		 * 5 8=====D 1 8 7
+		 * 6 8=====D 1
+		 * 7 8=====D 1 5
+		 * 8 8=====D 2 3 5
+		 */
+
+		int filas = 12;
 		int resultado = 0;
 		grafo_contexto ctx;
 
 		caca_log_debug("los valores %p", VALORES);
 
-		resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero);
+		resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero,
+				verdadero);
 
 		imprimir_lista_adjacencia(ctx.inicio);
 		zlog_fini();
@@ -263,6 +276,7 @@ START_TEST( test_init_grapho_busq_bin)
 
 Suite *
 cacacomun_suite(void) {
+
 	Suite *s = suite_create("Caca comun");
 
 	/* Core test case */

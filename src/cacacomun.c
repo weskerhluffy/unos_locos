@@ -165,7 +165,7 @@ int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
  int num_filas, bool
  usar_hashes) */
 int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
-		bool usar_hashes) {
+		bool usar_hashes, bool relaciones_bidireccionales) {
 	int i = 0;
 	GRAFO_TIPO_RESULTADO_BUSQUEDA tipo_resultado = GRAFO_NADA_ENCONTRADO;
 	tipo_dato distancia_actual = 0, indice_nodo_origen_actual = 0,
@@ -268,6 +268,82 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 					distancia_actual;
 			*(ctx->referencias_nodos_por_indice + indice_nodo_origen_actual) =
 					nodo_origen_actual;
+		}
+
+		if (relaciones_bidireccionales) {
+			caca_log_debug("Dando de alta relacion espejo-pendejoº");
+
+			nodo_tmp.indice = indice_nodo_destino_actual;
+
+			tipo_resultado = busqueda_binaria(ctx->inicio, &nodo_tmp,
+					GRAFO_PRINCIPAL, (void *) &nodos_encontrados);
+
+			switch (tipo_resultado) {
+			case GRAFO_NODO_ENCONTRADO:
+				nodo_origen_actual = *nodos_encontrados;
+				break;
+			case GRAFO_NODOS_PRE_POST_ENCONTRADOS:
+				nodo_origen_actual = grafo_nodo_alloc(ctx, 1);
+				nodo_origen_actual->indice = indice_nodo_destino_actual;
+				caca_log_debug("anadiendo %p a lista principal, entre %p y %p",
+						nodo_origen_actual, *nodos_encontrados,
+						*(nodos_encontrados + 1));
+				grafo_insertar_nodo(*nodos_encontrados,
+						*(nodos_encontrados + 1), nodo_origen_actual,
+						GRAFO_PRINCIPAL);
+				if (!*nodos_encontrados) {
+					*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
+							GRAFO_PRINCIPAL) =
+							*grafo_apuntador_num_nodos_asociados(ctx->inicio,
+									GRAFO_PRINCIPAL) + 1;
+					ctx->inicio = nodo_origen_actual;
+				} else {
+					(*grafo_apuntador_num_nodos_asociados(ctx->inicio,
+							GRAFO_PRINCIPAL))++;
+				}
+				*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
+						GRAFO_INDICE) = -1;
+				*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
+						GRAFO_DISTANCIA) = -1;
+				break;
+			case GRAFO_NADA_ENCONTRADO:
+				nodo_origen_actual = grafo_nodo_alloc(ctx, 1);
+				nodo_origen_actual->indice = indice_nodo_destino_actual;
+				ctx->inicio = nodo_origen_actual;
+				*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
+						GRAFO_PRINCIPAL) = 0;
+				*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
+						GRAFO_INDICE) = -1;
+				*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
+						GRAFO_DISTANCIA) = -1;
+				caca_log_debug("Se inicia la lista de nodos en ctx");
+				break;
+			default:
+				perror("no se pudo configurar ctx d graph");
+				exit(1);
+				break;
+			}
+
+			nodo_destino_actual = grafo_nodo_alloc(ctx, 1);
+			nodo_destino_actual->distancia = distancia_actual;
+			nodo_destino_actual->indice = indice_nodo_origen_actual;
+
+			caca_log_debug("insertando nodo %p en lista de indices de %p",
+					nodo_destino_actual, nodo_origen_actual);
+			grafo_anadir_nodo(nodo_origen_actual, nodo_destino_actual,
+					GRAFO_INDICE);
+			caca_log_debug("insertando nodo %p en lista de distancias de %p",
+					nodo_destino_actual, nodo_origen_actual);
+			grafo_anadir_nodo(nodo_origen_actual, nodo_destino_actual,
+					GRAFO_DISTANCIA);
+
+			if (usar_hashes) {
+				ctx->matrix_distancias[indice_nodo_destino_actual][indice_nodo_origen_actual] =
+						distancia_actual;
+				*(ctx->referencias_nodos_por_indice + indice_nodo_destino_actual) =
+						nodo_origen_actual;
+			}
+
 		}
 
 	}
@@ -381,6 +457,10 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_lineal(nodo *inicio, nodo *nodo_a_buscar,
 
 	if (tipo_resultado != GRAFO_NADA_ENCONTRADO) {
 		num_nodos_recorridos++;
+	} else {
+		if (nodo_actual) {
+			tipo_resultado = GRAFO_NODOS_PRE_POST_ENCONTRADOS;
+		}
 	}
 
 	if (nodo_actual && num_nodos_recorridos <= limite_nodos_busqueda) {
@@ -509,8 +589,10 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
 				indice_final - indice_inicial + 1);
 	} else {
 		indice_medio = (indice_inicial + indice_final) / 2;
+		caca_log_debug("el indice medio pendejo es %d", indice_medio);
 		resultado_comparacion = grafo_comparar_nodos(nodo_a_buscar,
 				*(arreglo_nodos + indice_medio), criterio_busqueda);
+		caca_log_debug("la comparacion se hizo");
 		caca_log_debug("comparando nodo %s con %s (posicion %d), resultado %d",
 				grafo_nodo_a_cadena(nodo_a_buscar, cadena1,NULL),
 				grafo_nodo_a_cadena(*(arreglo_nodos + indice_medio), cadena2,NULL),
@@ -551,6 +633,8 @@ static inline int grafo_comparar_nodos(nodo *nodo1, nodo *nodo2,
 	int resultado_comparacion;
 	char cadena1[MAX_TAM_CADENA];
 	char cadena2[MAX_TAM_CADENA];
+
+	caca_log_debug("entro a grafo_comparar_nodos");
 
 	caca_log_debug("comparando %s con %s",
 			grafo_nodo_a_cadena(nodo1, cadena1,NULL),
@@ -627,14 +711,18 @@ static inline char *grafo_nodo_a_cadena(nodo *node, char *cadena_buffer,
 		int *characteres_escritos) {
 
 	if (characteres_escritos) {
+//		caca_log_debug("Se regresaran los characteres escribtos");
 		*characteres_escritos =
 				sprintf(cadena_buffer, "{valor:%ld,indice:%ld,distancia:%ld} (%p) ", node->valor,
 						node->indice, node->distancia,node);
 	} else {
+
+	//	caca_log_debug("No se regresaran los characteres escribtos %p", node);
 		sprintf(cadena_buffer, "{valor:%ld,indice:%ld,distancia:%ld} (%p) ",
 				node->valor, node->indice, node->distancia, node);
 	}
 
+//	caca_log_debug("Termina conversion");
 	return cadena_buffer;
 }
 
