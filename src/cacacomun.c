@@ -597,14 +597,14 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
 				grafo_nodo_a_cadena(nodo_a_buscar, cadena1,NULL),
 				grafo_nodo_a_cadena(*(arreglo_nodos + indice_medio), cadena2,NULL),
 				indice_medio, resultado_comparacion);
-		if (resultado_comparacion == 0) {
+		if (resultado_comparacion == CACA_COMPARACION_IZQ_IGUAL) {
 			tipo_resultado = GRAFO_NODO_ENCONTRADO;
 			*nodos_encontrados_int = *(arreglo_nodos + indice_medio);
 		} else {
-			if (resultado_comparacion == -1) {
+			if (resultado_comparacion == CACA_COMPARACION_IZQ_MENOR) {
 				indice_final = indice_medio - 1;
 			} else {
-				if (resultado_comparacion == 1) {
+				if (resultado_comparacion == CACA_COMPARACION_IZQ_MAYOR) {
 					indice_inicial = indice_medio + 1;
 				} else {
 					perror("What the fuck?? busqueda_binaria_recursiva");
@@ -659,12 +659,12 @@ static inline int grafo_comparar_nodos(nodo *nodo1, nodo *nodo2,
 		break;
 	}
 	if (val1 < val2) {
-		resultado_comparacion = COMPARACION_MENOR;
+		resultado_comparacion = CACA_COMPARACION_IZQ_MENOR;
 	} else {
 		if (val1 > val2) {
-			resultado_comparacion = COMPARACION_MAYOR;
+			resultado_comparacion = CACA_COMPARACION_IZQ_MAYOR;
 		} else {
-			resultado_comparacion = COMPARACION_IGUAL;
+			resultado_comparacion = CACA_COMPARACION_IZQ_IGUAL;
 		}
 	}
 	caca_log_debug("resultado de comparacion %s con %s %d",
@@ -717,7 +717,7 @@ static inline char *grafo_nodo_a_cadena(nodo *node, char *cadena_buffer,
 						node->indice, node->distancia,node);
 	} else {
 
-	//	caca_log_debug("No se regresaran los characteres escribtos %p", node);
+		//	caca_log_debug("No se regresaran los characteres escribtos %p", node);
 		sprintf(cadena_buffer, "{valor:%ld,indice:%ld,distancia:%ld} (%p) ",
 				node->valor, node->indice, node->distancia, node);
 	}
@@ -938,4 +938,227 @@ static inline int *grafo_apuntador_num_nodos_asociados(nodo *nodo,
 		break;
 	}
 	return num_nodos;
+}
+
+void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *datos,
+		int num_datos) {
+	int i = 0;
+	tipo_dato dato_actual = 0;
+	nodo_arbol_binario *nodo_actual = NULL;
+
+	memset((void * )ctx, 0, sizeof(arbol_binario_contexto));
+	memset((void * )ctx->nodos_disponibles, 0, sizeof(ctx->nodos_disponibles));
+
+	ctx->raiz = arbol_binario_nodo_allocar(ctx, 1);
+
+	ctx->raiz->valor = *datos;
+
+	for (i = 1; i < num_datos; i++) {
+		dato_actual = *(datos + i);
+		nodo_actual = arbol_binario_nodo_allocar(ctx, 1);
+
+		nodo_actual->valor = dato_actual;
+
+		arbol_avl_insertar(&ctx->raiz, nodo_actual);
+		caca_log_debug("Raiz actual %ld", ctx->raiz->valor);
+	}
+}
+
+void arbol_avl_insertar(nodo_arbol_binario **raiz,
+		nodo_arbol_binario *nodo_a_insertar) {
+	nodo_arbol_binario *raiz_int = NULL;
+
+	raiz_int = *raiz;
+	char buffer[MAX_TAM_CADENA];
+	char buffer1[MAX_TAM_CADENA];
+
+	caca_log_debug("Insertando nodo %s, ancestro actual %s",
+			arbol_binario_nodo_a_cadena(nodo_a_insertar,buffer,NULL),
+			arbol_binario_nodo_a_cadena(raiz_int,buffer1,NULL));
+
+	switch (arbol_avl_compara_nodos(raiz_int, nodo_a_insertar)) {
+	case CACA_COMPARACION_IZQ_MENOR:
+		if (raiz_int->hijo_der) {
+			arbol_avl_insertar(&raiz_int->hijo_der, nodo_a_insertar);
+		} else {
+			raiz_int->hijo_der = nodo_a_insertar;
+		}
+		break;
+	case CACA_COMPARACION_IZQ_MAYOR:
+		caca_log_debug("Insercion BST a la izq");
+		if (raiz_int->hijo_izq) {
+			caca_log_debug("Recursiva");
+			arbol_avl_insertar(&raiz_int->hijo_izq, nodo_a_insertar);
+		} else {
+			caca_log_debug("Directa");
+			raiz_int->hijo_izq = nodo_a_insertar;
+		}
+		break;
+	case CACA_COMPARACION_IZQ_IGUAL:
+		perror("NO mames, una llave repetida, ahhhhh !");
+		exit(1);
+		break;
+	default:
+		perror("NO mames, resultado increible en arbol_avl_insertar!");
+		exit(1);
+		break;
+	}
+
+	caca_log_debug("Echa la insercion BST");
+	ARBOL_AVL_ACTUALIZAR_ALTURA(raiz_int);
+	caca_log_debug("algura es %d", raiz_int->altura);
+
+	switch (arbol_avl_diferencia_alturas_subarboles(raiz_int)) {
+	case ARBOL_AVL_ALTURA_CARGADA_IZQ:
+		caca_log_debug("Arbol cagado a la izq en %ld", raiz_int->valor);
+		if (raiz_int->hijo_izq->valor < nodo_a_insertar->valor) {
+			caca_log_debug("con hijo a la der");
+			arbol_binario_rotar_izq(&raiz_int->hijo_izq);
+		}
+		arbol_binario_rotar_der(raiz);
+		break;
+	case ARBOL_AVL_ALTURA_CARGADA_DER:
+		caca_log_debug("Arbol cagado a la der en %ld", raiz_int->valor);
+		if (raiz_int->hijo_der->valor > nodo_a_insertar->valor) {
+			caca_log_debug("con hijo a la izq");
+			arbol_binario_rotar_der(&raiz_int->hijo_der);
+		}
+		arbol_binario_rotar_izq(raiz);
+		break;
+	case ARBOL_AVL_ALTURA_BALANCEADA:
+		caca_log_debug("Excelente, en nodo %s, altura balancelada",
+				arbol_binario_nodo_a_cadena(raiz_int,buffer,NULL));
+		break;
+	default:
+		perror("error en altura indeterminada, verga");
+		exit(1);
+		break;
+	}
+
+}
+
+static inline int arbol_avl_compara_nodos(nodo_arbol_binario *nodo1,
+		nodo_arbol_binario *nodo2) {
+	caca_log_debug("Comparando %ld con %ld", nodo1->valor, nodo2->valor);
+	if (nodo1->valor < nodo2->valor) {
+		return CACA_COMPARACION_IZQ_MENOR;
+	} else {
+		if (nodo1->valor > nodo2->valor) {
+			return CACA_COMPARACION_IZQ_MAYOR;
+		} else {
+			return CACA_COMPARACION_IZQ_IGUAL;
+		}
+	}
+}
+
+static inline int caca_int_max(int a, int b) {
+	return (a > b) ? a : b;
+}
+
+static inline int arbol_avl_diferencia_alturas_subarboles(
+		nodo_arbol_binario *nodo) {
+	int diferencia_alturas = 0;
+	diferencia_alturas = (nodo->hijo_der ? nodo->hijo_der->altura : 0)
+			- (nodo->hijo_izq ? nodo->hijo_izq->altura : 0);
+	caca_log_debug("La diferecnai resultao %d", diferencia_alturas);
+	return diferencia_alturas >= 1 ? ARBOL_AVL_ALTURA_CARGADA_DER :
+			diferencia_alturas <= -1 ?
+					ARBOL_AVL_ALTURA_CARGADA_IZQ : ARBOL_AVL_ALTURA_BALANCEADA;
+}
+
+static inline void arbol_binario_rotar_izq(nodo_arbol_binario **nodo) {
+	nodo_arbol_binario *nodo_int = NULL;
+	nodo_arbol_binario *hijo_der = NULL;
+	nodo_arbol_binario *hijo_der_subarbol_izq = NULL;
+
+	nodo_int = *nodo;
+	hijo_der = nodo_int->hijo_der;
+	caca_log_debug("Asignado hijo der");
+	hijo_der_subarbol_izq = hijo_der->hijo_izq;
+	caca_log_debug("Asignado subarbol izq hijo der");
+
+	caca_log_debug("Antes de la rotacion");
+
+	nodo_int->hijo_der = hijo_der_subarbol_izq;
+	hijo_der->hijo_izq = nodo_int;
+
+	caca_log_debug("Rotados los nodos");
+	ARBOL_AVL_ACTUALIZAR_ALTURA(nodo_int);
+	ARBOL_AVL_ACTUALIZAR_ALTURA(hijo_der);
+	caca_log_debug("Alturas actualizadas");
+
+	*nodo = hijo_der;
+
+}
+
+static inline void arbol_binario_rotar_der(nodo_arbol_binario **nodo) {
+	nodo_arbol_binario *nodo_int = NULL;
+	nodo_arbol_binario *hijo_izq = NULL;
+	nodo_arbol_binario *hijo_izq_subarbol_der = NULL;
+
+	nodo_int = *nodo;
+	hijo_izq = nodo_int->hijo_izq;
+	hijo_izq_subarbol_der = hijo_izq->hijo_der;
+
+	nodo_int->hijo_izq = hijo_izq_subarbol_der;
+	hijo_izq->hijo_der = nodo_int;
+
+	ARBOL_AVL_ACTUALIZAR_ALTURA(nodo_int);
+	ARBOL_AVL_ACTUALIZAR_ALTURA(hijo_izq);
+
+	*nodo = hijo_izq;
+
+}
+
+static inline char *arbol_binario_nodo_a_cadena(nodo_arbol_binario *node,
+		char *cadena_buffer, int *characteres_escritos) {
+
+	if (characteres_escritos) {
+		*characteres_escritos =
+				sprintf(cadena_buffer, "{valor:%ld, direccion %p, hijo izq:%ld (%p), hijo der:%ld (%p)}  ",
+						node->valor, node,
+						node->hijo_izq?node->hijo_izq->valor:0, node->hijo_izq,
+						node->hijo_der?node->hijo_der->valor:0,node->hijo_der);
+	} else {
+		sprintf(cadena_buffer,
+				"{valor:%ld, direccion %p, hijo izq:%ld (%p), hijo der:%ld (%p)}  ",
+				node->valor, node, node->hijo_izq ? node->hijo_izq->valor : 0,
+				node->hijo_izq, node->hijo_der ? node->hijo_der->valor : 0,
+				node->hijo_der);
+	}
+	return cadena_buffer;
+}
+
+static inline nodo_arbol_binario *arbol_binario_nodo_allocar(
+		arbol_binario_contexto *ctx, int localidades_solicitadas) {
+	nodo_arbol_binario *inicio_localidades_allocadas = NULL;
+	if ((sizeof(ctx->nodos_disponibles) - ctx->localidades_usadas)
+			>= localidades_solicitadas) {
+		inicio_localidades_allocadas = ctx->nodos_disponibles
+				+ ctx->localidades_usadas;
+		ctx->localidades_usadas += localidades_solicitadas;
+	}
+	return inicio_localidades_allocadas;
+}
+
+void arbol_binario_recorrido_preoder(nodo_arbol_binario *raiz) {
+	char buffer[MAX_TAM_CADENA];
+	if (!raiz) {
+		return;
+	}
+	caca_log_debug("%s ", arbol_binario_nodo_a_cadena(raiz,buffer,NULL));
+	arbol_binario_recorrido_preoder(raiz->hijo_izq);
+	arbol_binario_recorrido_preoder(raiz->hijo_der);
+}
+
+void arbol_binario_colectar_datos_recorrido_preoder(nodo_arbol_binario *raiz,
+		tipo_dato *datos_ordenados, int *num_datos_colectados) {
+	if (!raiz) {
+		return;
+	}
+	*(datos_ordenados + (*num_datos_colectados)++) = raiz->valor;
+	arbol_binario_colectar_datos_recorrido_preoder(raiz->hijo_izq,
+			datos_ordenados, num_datos_colectados);
+	arbol_binario_colectar_datos_recorrido_preoder(raiz->hijo_der,
+			datos_ordenados, num_datos_colectados);
 }

@@ -274,6 +274,33 @@ START_TEST( test_init_grapho_busq_bin)
 		ck_assert_msg(!resultado, "todo en orden %s", resultado);
 	}END_TEST
 
+START_TEST( test_init_arbol_avl)
+	{
+
+		const tipo_dato VALORES[6] = { 10, 20, 30, 40, 50, 25 };
+		const tipo_dato VALORES_PREORDER[6] = { 30, 20, 10, 25, 40, 50 };
+
+		int resultado = 0;
+		tipo_dato valores_preorder_resultado[6] = { 0 };
+		arbol_binario_contexto ctx;
+
+		arbol_avl_init(&ctx, VALORES, 6);
+
+		arbol_binario_colectar_datos_recorrido_preoder(ctx.raiz,
+				valores_preorder_resultado, &resultado);
+
+		resultado = memcmp(VALORES_PREORDER, valores_preorder_resultado, 6);
+
+		caca_log_debug("La secuencia es:");
+
+		arbol_binario_recorrido_preoder(ctx.raiz);
+
+
+		zlog_fini();
+
+		ck_assert_msg(!resultado, "todo en orden %d", resultado);
+	}END_TEST
+
 Suite *
 cacacomun_suite(void) {
 
@@ -291,6 +318,7 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_imprime_array);
 	tcase_add_test(tc_core, test_init_grapho);
 	tcase_add_test(tc_core, test_init_grapho_busq_bin);
+	tcase_add_test(tc_core, test_init_arbol_avl);
 	suite_add_tcase(s, tc_core);
 
 	return s;

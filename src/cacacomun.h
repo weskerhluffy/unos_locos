@@ -31,9 +31,9 @@
 #define MAX_COLUMNAS_INPUT 256
 #define MAX_FILAS_NODOS 1000
 #define MAX_COLUMNAS_NODOS 1000
-#define COMPARACION_MENOR -1
-#define COMPARACION_IGUAL 0
-#define COMPARACION_MAYOR 1
+#define CACA_COMPARACION_IZQ_MENOR -1
+#define CACA_COMPARACION_IZQ_IGUAL 0
+#define CACA_COMPARACION_IZQ_MAYOR 1
 #define MAX_TAM_CADENA 1000
 
 #define MAX_VALOR (tipo_dato) (2<<28)
@@ -116,6 +116,9 @@ typedef enum BOOLEANOS {
 		} \
 		while(0)
 
+#define ARBOL_AVL_ACTUALIZAR_ALTURA(nodo) \
+	(nodo)->altura = caca_int_max((nodo)->hijo_izq?(nodo)->hijo_izq->altura:0, (nodo)->hijo_der?(nodo)->hijo_der->altura:0) + 1;
+
 // XXX: http://www.programiz.com/c-programming/c-enumeration
 #undef  ADDITEM
 #define ADDITEM( criterio_ordenacion, comentario) criterio_ordenacion
@@ -148,6 +151,13 @@ typedef struct nodo {
 	struct nodo *anterior_distancia;
 } nodo;
 
+typedef struct nodo_arbol_binario {
+	tipo_dato valor;
+	unsigned int altura;
+	struct nodo_arbol_binario *hijo_izq;
+	struct nodo_arbol_binario *hijo_der;
+} nodo_arbol_binario;
+
 typedef struct grifo_contexto {
 	int localidades_usadas;
 	nodo *inicio;
@@ -155,6 +165,12 @@ typedef struct grifo_contexto {
 	tipo_dato matrix_distancias[MAX_COLUMNAS_NODOS][MAX_FILAS_NODOS];
 	nodo *referencias_nodos_por_indice[MAX_FILAS_NODOS];
 } grafo_contexto;
+
+typedef struct arbol_binario_contexto {
+	int localidades_usadas;
+	nodo_arbol_binario *raiz;
+	nodo_arbol_binario nodos_disponibles[MAX_NODOS];
+} arbol_binario_contexto;
 
 zlog_category_t *cacategoria = NULL;
 
@@ -229,4 +245,36 @@ void imprimir_lista_adjacencia(nodo *nodo_inicial);
 
 static inline int *grafo_apuntador_num_nodos_asociados(nodo *nodo,
 		GRAFO_CRITERIOS_ORDENACION criterio_busqueda);
+
+void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *datos,
+		int num_datos);
+
+#define ARBOL_AVL_ALTURA_CARGADA_IZQ -1
+#define ARBOL_AVL_ALTURA_CARGADA_DER 1
+#define ARBOL_AVL_ALTURA_BALANCEADA 0
+static inline int arbol_avl_diferencia_alturas_subarboles(
+		nodo_arbol_binario *nodo);
+
+static inline char *arbol_binario_nodo_a_cadena(nodo_arbol_binario *node,
+		char *cadena_buffer, int *characteres_escritos);
+
+static inline nodo_arbol_binario *arbol_binario_nodo_allocar(
+		arbol_binario_contexto *ctx, int localidades_solicitadas);
+
+void arbol_binario_recorrido_preoder(nodo_arbol_binario *raiz);
+
+void arbol_binario_colectar_datos_recorrido_preoder(nodo_arbol_binario *raiz,
+		tipo_dato *datos_ordenados, int *num_datos_colectados);
+
+void arbol_avl_insertar(nodo_arbol_binario **raiz,
+		nodo_arbol_binario *nodo_a_insertar);
+
+static inline int arbol_avl_compara_nodos(nodo_arbol_binario *nodo1,
+		nodo_arbol_binario *nodo2);
+
+static inline int caca_int_max(int a, int b);
+
+static inline void arbol_binario_rotar_izq(nodo_arbol_binario **nodo);
+static inline void arbol_binario_rotar_der(nodo_arbol_binario **nodo);
+
 #endif /* CACACOMUN_H_ */
