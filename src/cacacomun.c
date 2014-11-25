@@ -1162,3 +1162,70 @@ void arbol_binario_colectar_datos_recorrido_preoder(nodo_arbol_binario *raiz,
 	arbol_binario_colectar_datos_recorrido_preoder(raiz->hijo_der,
 			datos_ordenados, num_datos_colectados);
 }
+
+static inline nodo_arbol_binario *arbol_binario_get_nodo_minimo_valor(
+		nodo_arbol_binario *raiz) {
+	nodo_arbol_binario *nodo_actual = NULL;
+	nodo_actual = raiz;
+	while (nodo_actual->hijo_izq) {
+		nodo_actual = nodo_actual->hijo_izq;
+	}
+	return nodo_actual;
+}
+
+void arbol_binario_borrar_nodo(nodo_arbol_binario **raiz,
+		tipo_dato valor_a_borrar) {
+	nodo_arbol_binario *raiz_int = NULL;
+	nodo_arbol_binario *nodo_min = NULL;
+
+	raiz_int = *raiz;
+
+	if (!raiz_int) {
+		caca_log_debug("Raiz nula, pq la mandan?");
+		return;
+	}
+	if (raiz_int->valor > valor_a_borrar) {
+		arbol_binario_borrar_nodo(&raiz_int->hijo_izq,valor_a_borrar);
+	} else {
+		if (raiz_int->valor < valor_a_borrar) {
+			arbol_binario_borrar_nodo(&raiz_int->hijo_der,valor_a_borrar);
+		} else {
+			if (!raiz_int->hijo_izq) {
+				*raiz = raiz_int->hijo_der;
+			} else {
+				if (!raiz_int->hijo_der) {
+					*raiz = raiz_int->hijo_izq;
+				} else {
+					nodo_min = arbol_binario_get_nodo_minimo_valor(
+							raiz_int->hijo_der);
+					raiz_int->valor = nodo_min->valor;
+					arbol_binario_borrar_nodo(&raiz_int->hijo_der,
+							raiz_int->valor);
+				}
+			}
+		}
+	}
+
+}
+
+void arbol_binario_recorrido_inoder(nodo_arbol_binario *raiz) {
+	char buffer[MAX_TAM_CADENA];
+	if (!raiz) {
+		return;
+	}
+	arbol_binario_recorrido_preoder(raiz->hijo_izq);
+	caca_log_debug("%s ", arbol_binario_nodo_a_cadena(raiz,buffer,NULL));
+	arbol_binario_recorrido_preoder(raiz->hijo_der);
+}
+
+void arbol_binario_colectar_datos_recorrido_inoder(nodo_arbol_binario *raiz,
+		tipo_dato *datos_ordenados, int *num_datos_colectados) {
+	if (!raiz) {
+		return;
+	}
+	arbol_binario_colectar_datos_recorrido_preoder(raiz->hijo_izq,
+			datos_ordenados, num_datos_colectados);
+	*(datos_ordenados + (*num_datos_colectados)++) = raiz->valor;
+	arbol_binario_colectar_datos_recorrido_preoder(raiz->hijo_der,
+			datos_ordenados, num_datos_colectados);
+}

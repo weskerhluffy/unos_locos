@@ -76,3 +76,6 @@ caca.c
 
 caca
 /prueba_backtrace
+
+Debug/makefile
+/Debug

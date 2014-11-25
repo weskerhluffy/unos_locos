@@ -277,4 +277,12 @@ static inline int caca_int_max(int a, int b);
 static inline void arbol_binario_rotar_izq(nodo_arbol_binario **nodo);
 static inline void arbol_binario_rotar_der(nodo_arbol_binario **nodo);
 
+void arbol_binario_borrar_nodo(nodo_arbol_binario **raiz,
+		tipo_dato valor_a_borrar);
+
+void arbol_binario_colectar_datos_recorrido_inoder(nodo_arbol_binario *raiz,
+		tipo_dato *datos_ordenados, int *num_datos_colectados);
+
+void arbol_binario_recorrido_inoder(nodo_arbol_binario *raiz);
+
 #endif /* CACACOMUN_H_ */
