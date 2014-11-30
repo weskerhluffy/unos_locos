@@ -284,7 +284,7 @@ START_TEST( test_init_arbol_avl)
 		tipo_dato valores_preorder_resultado[6] = { 0 };
 		arbol_binario_contexto ctx;
 
-		arbol_avl_init(&ctx, VALORES, 6);
+		arbol_avl_init(&ctx, (unsigned long *) VALORES, 6);
 
 		arbol_binario_colectar_datos_recorrido_preoder(ctx.raiz,
 				valores_preorder_resultado, &resultado);
@@ -310,7 +310,7 @@ START_TEST( test_borrar_arbol_binario)
 		tipo_dato valores_preorder_resultado[4] = { 0 };
 		arbol_binario_contexto ctx;
 
-		arbol_avl_init(&ctx, VALORES, 7);
+		arbol_avl_init(&ctx, (unsigned long *) VALORES, 7);
 
 		arbol_binario_borrar_nodo(&ctx.raiz, 20);
 		arbol_binario_borrar_nodo(&ctx.raiz, 30);
@@ -325,6 +325,38 @@ START_TEST( test_borrar_arbol_binario)
 		caca_log_debug("La secuencia es:");
 
 		arbol_binario_recorrido_inoder(ctx.raiz);
+
+		zlog_fini();
+
+		ck_assert_msg(!resultado, "todo en orden %d", resultado);
+	}END_TEST
+
+START_TEST( test_borrar_arbol_avl)
+	{
+
+		const tipo_dato VALORES[9] = { 9, 5, 10, 1, 6, 11, 0, 2, 3 };
+		const tipo_dato VALORES_FINALES_PREORDER[8] =
+				{ 2, 1, 0, 9, 5, 3, 6, 11 };
+
+		int resultado = 0;
+		tipo_dato valores_preorder_resultado[8] = { 0 };
+		arbol_binario_contexto ctx;
+
+		arbol_avl_init(&ctx, (unsigned long *) VALORES, 9);
+
+		caca_log_debug("La secuencia inicial es:");
+		arbol_binario_recorrido_preoder(ctx.raiz);
+
+		arbol_avl_borrar(&ctx.raiz, 10);
+
+		arbol_binario_colectar_datos_recorrido_preoder(ctx.raiz,
+				valores_preorder_resultado, &resultado);
+
+		resultado = memcmp(VALORES_FINALES_PREORDER, valores_preorder_resultado,
+				8);
+
+		caca_log_debug("La secuencia final es:");
+		arbol_binario_recorrido_preoder(ctx.raiz);
 
 		zlog_fini();
 
@@ -350,6 +382,7 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_init_grapho_busq_bin);
 	tcase_add_test(tc_core, test_init_arbol_avl);
 	tcase_add_test(tc_core, test_borrar_arbol_binario);
+	tcase_add_test(tc_core, test_borrar_arbol_avl);
 	suite_add_tcase(s, tc_core);
 
 	return s;

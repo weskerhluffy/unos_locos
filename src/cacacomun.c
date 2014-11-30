@@ -978,7 +978,9 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 
 	switch (arbol_avl_compara_nodos(raiz_int, nodo_a_insertar)) {
 	case CACA_COMPARACION_IZQ_MENOR:
+		caca_log_debug("Insercion BST a la der");
 		if (raiz_int->hijo_der) {
+			caca_log_debug("Recursiva");
 			arbol_avl_insertar(&raiz_int->hijo_der, nodo_a_insertar);
 		} else {
 			raiz_int->hijo_der = nodo_a_insertar;
@@ -987,7 +989,7 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 	case CACA_COMPARACION_IZQ_MAYOR:
 		caca_log_debug("Insercion BST a la izq");
 		if (raiz_int->hijo_izq) {
-			caca_log_debug("Recursiva");
+			caca_log_debug("Recursiva %p", &raiz_int->hijo_izq);
 			arbol_avl_insertar(&raiz_int->hijo_izq, nodo_a_insertar);
 		} else {
 			caca_log_debug("Directa");
@@ -1004,26 +1006,40 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 		break;
 	}
 
-	caca_log_debug("Echa la insercion BST");
+	caca_log_debug("Echa la insercion BST de %ld en ancestro %ld",
+			ARBOL_AVL_GET_VALOR(nodo_a_insertar),
+			ARBOL_AVL_GET_VALOR(raiz_int));
 	ARBOL_AVL_ACTUALIZAR_ALTURA(raiz_int);
 	caca_log_debug("algura es %d", raiz_int->altura);
+	caca_log_debug("hijo der %ld %p %p", ARBOL_AVL_GET_VALOR((*raiz)->hijo_izq),
+			(*raiz)->hijo_izq, &(*raiz)->hijo_izq);
 
-	switch (arbol_avl_diferencia_alturas_subarboles(raiz_int)) {
+	switch (arbol_avl_diferencia_alturas_subarboles(raiz_int, 1, verdadero)) {
 	case ARBOL_AVL_ALTURA_CARGADA_IZQ:
 		caca_log_debug("Arbol cagado a la izq en %ld", raiz_int->valor);
-		if (raiz_int->hijo_izq->valor < nodo_a_insertar->valor) {
+		if (ARBOL_AVL_GET_VALOR(raiz_int->hijo_izq)
+				< ARBOL_AVL_GET_VALOR(nodo_a_insertar)) {
 			caca_log_debug("con hijo a la der");
 			arbol_binario_rotar_izq(&raiz_int->hijo_izq);
 		}
 		arbol_binario_rotar_der(raiz);
+		caca_log_debug("Ahora la raiz %p %ld, izq %ld, der %ld", raiz,
+				ARBOL_AVL_GET_VALOR(*raiz),
+				ARBOL_AVL_GET_VALOR((*raiz)->hijo_izq),
+				ARBOL_AVL_GET_VALOR((*raiz)->hijo_der));
 		break;
 	case ARBOL_AVL_ALTURA_CARGADA_DER:
 		caca_log_debug("Arbol cagado a la der en %ld", raiz_int->valor);
-		if (raiz_int->hijo_der->valor > nodo_a_insertar->valor) {
+		if (ARBOL_AVL_GET_VALOR(raiz_int->hijo_der)
+				> ARBOL_AVL_GET_VALOR(nodo_a_insertar)) {
 			caca_log_debug("con hijo a la izq");
 			arbol_binario_rotar_der(&raiz_int->hijo_der);
 		}
 		arbol_binario_rotar_izq(raiz);
+		caca_log_debug("Ahora la raiz %p %ld, izq %ld, der %ld", raiz,
+				ARBOL_AVL_GET_VALOR(*raiz),
+				ARBOL_AVL_GET_VALOR((*raiz)->hijo_izq),
+				ARBOL_AVL_GET_VALOR((*raiz)->hijo_der));
 		break;
 	case ARBOL_AVL_ALTURA_BALANCEADA:
 		caca_log_debug("Excelente, en nodo %s, altura balancelada",
@@ -1035,6 +1051,9 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 		break;
 	}
 
+	caca_log_debug("termino con valor %ld, raiz %p y ap raiz %p",
+			ARBOL_AVL_GET_VALOR(*raiz), *raiz, raiz);
+	arbol_binario_recorrido_preoder(*raiz);
 }
 
 static inline int arbol_avl_compara_nodos(nodo_arbol_binario *nodo1,
@@ -1056,14 +1075,25 @@ static inline int caca_int_max(int a, int b) {
 }
 
 static inline int arbol_avl_diferencia_alturas_subarboles(
-		nodo_arbol_binario *nodo) {
+		nodo_arbol_binario *nodo, int tolerancia,
+		bool considerar_balanceado_cargado_der) {
 	int diferencia_alturas = 0;
-	diferencia_alturas = (nodo->hijo_der ? nodo->hijo_der->altura : 0)
-			- (nodo->hijo_izq ? nodo->hijo_izq->altura : 0);
+	diferencia_alturas = ARBOL_AVL_GET_ALTURA(nodo->hijo_izq)
+			- ARBOL_AVL_GET_ALTURA(nodo->hijo_der);
 	caca_log_debug("La diferecnai resultao %d", diferencia_alturas);
-	return diferencia_alturas >= 1 ? ARBOL_AVL_ALTURA_CARGADA_DER :
-			diferencia_alturas <= -1 ?
-					ARBOL_AVL_ALTURA_CARGADA_IZQ : ARBOL_AVL_ALTURA_BALANCEADA;
+	if (considerar_balanceado_cargado_der) {
+		return diferencia_alturas < 0 - tolerancia ?
+				ARBOL_AVL_ALTURA_CARGADA_DER :
+				diferencia_alturas > tolerancia ?
+						ARBOL_AVL_ALTURA_CARGADA_IZQ :
+						ARBOL_AVL_ALTURA_BALANCEADA;
+	} else {
+		return diferencia_alturas < 0 - tolerancia ?
+				ARBOL_AVL_ALTURA_CARGADA_DER :
+				diferencia_alturas > tolerancia ?
+						ARBOL_AVL_ALTURA_CARGADA_IZQ :
+						ARBOL_AVL_ALTURA_BALANCEADA;
+	}
 }
 
 static inline void arbol_binario_rotar_izq(nodo_arbol_binario **nodo) {
@@ -1071,11 +1101,14 @@ static inline void arbol_binario_rotar_izq(nodo_arbol_binario **nodo) {
 	nodo_arbol_binario *hijo_der = NULL;
 	nodo_arbol_binario *hijo_der_subarbol_izq = NULL;
 
+	caca_log_debug("rotando %ld", ARBOL_AVL_GET_VALOR(*nodo));
+
 	nodo_int = *nodo;
 	hijo_der = nodo_int->hijo_der;
-	caca_log_debug("Asignado hijo der");
+	caca_log_debug("Asignado hijo der %ld", ARBOL_AVL_GET_VALOR(hijo_der));
 	hijo_der_subarbol_izq = hijo_der->hijo_izq;
-	caca_log_debug("Asignado subarbol izq hijo der");
+	caca_log_debug("Asignado subarbol izq hijo der %ld",
+			ARBOL_AVL_GET_VALOR(hijo_der_subarbol_izq));
 
 	caca_log_debug("Antes de la rotacion");
 
@@ -1096,15 +1129,26 @@ static inline void arbol_binario_rotar_der(nodo_arbol_binario **nodo) {
 	nodo_arbol_binario *hijo_izq = NULL;
 	nodo_arbol_binario *hijo_izq_subarbol_der = NULL;
 
+	caca_log_debug("rotando %ld hijo izq %ld hijo der %ld",
+			ARBOL_AVL_GET_VALOR(*nodo), ARBOL_AVL_GET_VALOR((*nodo)->hijo_izq),
+			ARBOL_AVL_GET_VALOR((*nodo)->hijo_der));
+
 	nodo_int = *nodo;
 	hijo_izq = nodo_int->hijo_izq;
+	caca_log_debug("Asignado hijo izq %ld", ARBOL_AVL_GET_VALOR(hijo_izq));
 	hijo_izq_subarbol_der = hijo_izq->hijo_der;
+	caca_log_debug("Asignado subarbol der hijo izq %ld",
+			ARBOL_AVL_GET_VALOR(hijo_izq_subarbol_der));
+
+	caca_log_debug("Antes de la rotacion");
 
 	nodo_int->hijo_izq = hijo_izq_subarbol_der;
 	hijo_izq->hijo_der = nodo_int;
 
+	caca_log_debug("Rotados los nodos");
 	ARBOL_AVL_ACTUALIZAR_ALTURA(nodo_int);
 	ARBOL_AVL_ACTUALIZAR_ALTURA(hijo_izq);
+	caca_log_debug("Alturas actualizadas");
 
 	*nodo = hijo_izq;
 
@@ -1115,16 +1159,16 @@ static inline char *arbol_binario_nodo_a_cadena(nodo_arbol_binario *node,
 
 	if (characteres_escritos) {
 		*characteres_escritos =
-				sprintf(cadena_buffer, "{valor:%ld, direccion %p, hijo izq:%ld (%p), hijo der:%ld (%p)}  ",
-						node->valor, node,
+				sprintf(cadena_buffer, "{valor:%ld, altura %d, direccion %p, hijo izq:%ld (%p), hijo der:%ld (%p)}  ",
+						node->valor,ARBOL_AVL_GET_ALTURA(node), node,
 						node->hijo_izq?node->hijo_izq->valor:0, node->hijo_izq,
 						node->hijo_der?node->hijo_der->valor:0,node->hijo_der);
 	} else {
 		sprintf(cadena_buffer,
-				"{valor:%ld, direccion %p, hijo izq:%ld (%p), hijo der:%ld (%p)}  ",
-				node->valor, node, node->hijo_izq ? node->hijo_izq->valor : 0,
-				node->hijo_izq, node->hijo_der ? node->hijo_der->valor : 0,
-				node->hijo_der);
+				"{valor:%ld, altura %d, direccion %p, hijo izq:%ld (%p), hijo der:%ld (%p)}  ",
+				node->valor, ARBOL_AVL_GET_ALTURA(node), node,
+				node->hijo_izq ? node->hijo_izq->valor : 0, node->hijo_izq,
+				node->hijo_der ? node->hijo_der->valor : 0, node->hijo_der);
 	}
 	return cadena_buffer;
 }
@@ -1185,10 +1229,10 @@ void arbol_binario_borrar_nodo(nodo_arbol_binario **raiz,
 		return;
 	}
 	if (raiz_int->valor > valor_a_borrar) {
-		arbol_binario_borrar_nodo(&raiz_int->hijo_izq,valor_a_borrar);
+		arbol_binario_borrar_nodo(&raiz_int->hijo_izq, valor_a_borrar);
 	} else {
 		if (raiz_int->valor < valor_a_borrar) {
-			arbol_binario_borrar_nodo(&raiz_int->hijo_der,valor_a_borrar);
+			arbol_binario_borrar_nodo(&raiz_int->hijo_der, valor_a_borrar);
 		} else {
 			if (!raiz_int->hijo_izq) {
 				*raiz = raiz_int->hijo_der;
@@ -1213,9 +1257,9 @@ void arbol_binario_recorrido_inoder(nodo_arbol_binario *raiz) {
 	if (!raiz) {
 		return;
 	}
-	arbol_binario_recorrido_preoder(raiz->hijo_izq);
+	arbol_binario_recorrido_inoder(raiz->hijo_izq);
 	caca_log_debug("%s ", arbol_binario_nodo_a_cadena(raiz,buffer,NULL));
-	arbol_binario_recorrido_preoder(raiz->hijo_der);
+	arbol_binario_recorrido_inoder(raiz->hijo_der);
 }
 
 void arbol_binario_colectar_datos_recorrido_inoder(nodo_arbol_binario *raiz,
@@ -1229,3 +1273,84 @@ void arbol_binario_colectar_datos_recorrido_inoder(nodo_arbol_binario *raiz,
 	arbol_binario_colectar_datos_recorrido_preoder(raiz->hijo_der,
 			datos_ordenados, num_datos_colectados);
 }
+
+void arbol_avl_borrar(nodo_arbol_binario **raiz, tipo_dato valor_a_borrar) {
+
+	nodo_arbol_binario *raiz_int = NULL;
+	nodo_arbol_binario *nodo_min = NULL;
+
+	raiz_int = *raiz;
+
+	if (!raiz_int) {
+		caca_log_debug("Raiz nula, pq la mandan?");
+		return;
+	}
+	if (raiz_int->valor > valor_a_borrar) {
+		arbol_avl_borrar(&raiz_int->hijo_izq, valor_a_borrar);
+	} else {
+		if (raiz_int->valor < valor_a_borrar) {
+			arbol_avl_borrar(&raiz_int->hijo_der, valor_a_borrar);
+		} else {
+			if (!raiz_int->hijo_izq) {
+				*raiz = raiz_int->hijo_der;
+			} else {
+				if (!raiz_int->hijo_der) {
+					*raiz = raiz_int->hijo_izq;
+				} else {
+					nodo_min = arbol_binario_get_nodo_minimo_valor(
+							raiz_int->hijo_der);
+					raiz_int->valor = nodo_min->valor;
+					arbol_avl_borrar(&raiz_int->hijo_der, raiz_int->valor);
+				}
+			}
+		}
+	}
+
+	caca_log_debug("Terminado borrado BST");
+
+	if (!*raiz) {
+		caca_log_debug("Se borro el ultimo nodo");
+		return;
+	}
+
+	ARBOL_AVL_ACTUALIZAR_ALTURA(raiz_int);
+
+	switch (arbol_avl_diferencia_alturas_subarboles(raiz_int, 1, verdadero)) {
+	case ARBOL_AVL_ALTURA_CARGADA_IZQ:
+		caca_log_debug("Arbol cagado a la izq");
+		if (arbol_avl_diferencia_alturas_subarboles(raiz_int->hijo_izq, 0,
+				falso) == ARBOL_AVL_ALTURA_CARGADA_DER) {
+			caca_log_debug("Con ijo cagado a la derecha");
+			arbol_binario_rotar_izq(&raiz_int->hijo_izq);
+		}
+		caca_log_debug("Rotando nodo raiz");
+		arbol_binario_rotar_der(raiz);
+		caca_log_debug("Ahora la raiz %ld, izq %ld, der %ld",
+				ARBOL_AVL_GET_VALOR(*raiz),
+				ARBOL_AVL_GET_VALOR((*raiz)->hijo_izq),
+				ARBOL_AVL_GET_VALOR((*raiz)->hijo_der));
+		break;
+	case ARBOL_AVL_ALTURA_CARGADA_DER:
+		caca_log_debug("Arbol cagado a la der");
+		if (arbol_avl_diferencia_alturas_subarboles(raiz_int->hijo_der, 0,
+				verdadero) == ARBOL_AVL_ALTURA_CARGADA_IZQ) {
+			caca_log_debug("Con ijo cagado a la izq");
+			arbol_binario_rotar_der(&raiz_int->hijo_der);
+		}
+		caca_log_debug("Rotando nodo raiz");
+		arbol_binario_rotar_izq(raiz);
+		caca_log_debug("Ahora la raiz %ld, izq %ld, der %ld",
+				ARBOL_AVL_GET_VALOR(*raiz),
+				ARBOL_AVL_GET_VALOR((*raiz)->hijo_izq),
+				ARBOL_AVL_GET_VALOR((*raiz)->hijo_der));
+		break;
+	case ARBOL_AVL_ALTURA_BALANCEADA:
+		caca_log_debug("Arbol balanceado");
+		break;
+	default:
+		caca_log_debug("Mother of fuck arbol_avl_borrar");
+		break;
+	}
+
+}
+

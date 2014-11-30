@@ -117,7 +117,15 @@ typedef enum BOOLEANOS {
 		while(0)
 
 #define ARBOL_AVL_ACTUALIZAR_ALTURA(nodo) \
-	(nodo)->altura = caca_int_max((nodo)->hijo_izq?(nodo)->hijo_izq->altura:0, (nodo)->hijo_der?(nodo)->hijo_der->altura:0) + 1;
+	(nodo)->altura = ((nodo)->hijo_izq || (nodo)->hijo_der)? \
+			caca_int_max(ARBOL_AVL_GET_ALTURA((nodo)->hijo_izq), ARBOL_AVL_GET_ALTURA((nodo)->hijo_der)) + 1: \
+			0;
+
+#define ARBOL_AVL_GET_ALTURA(nodo) \
+	((nodo)?(nodo)->altura:0)
+
+#define ARBOL_AVL_GET_VALOR(nodo) \
+	((nodo)?(nodo)->valor:-1)
 
 // XXX: http://www.programiz.com/c-programming/c-enumeration
 #undef  ADDITEM
@@ -252,8 +260,10 @@ void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *datos,
 #define ARBOL_AVL_ALTURA_CARGADA_IZQ -1
 #define ARBOL_AVL_ALTURA_CARGADA_DER 1
 #define ARBOL_AVL_ALTURA_BALANCEADA 0
+
 static inline int arbol_avl_diferencia_alturas_subarboles(
-		nodo_arbol_binario *nodo);
+		nodo_arbol_binario *nodo, int tolerancia,
+		bool considerar_balanceado_cargado_der);
 
 static inline char *arbol_binario_nodo_a_cadena(nodo_arbol_binario *node,
 		char *cadena_buffer, int *characteres_escritos);
@@ -284,5 +294,7 @@ void arbol_binario_colectar_datos_recorrido_inoder(nodo_arbol_binario *raiz,
 		tipo_dato *datos_ordenados, int *num_datos_colectados);
 
 void arbol_binario_recorrido_inoder(nodo_arbol_binario *raiz);
+
+void arbol_avl_borrar(nodo_arbol_binario **raiz, tipo_dato valor_a_borrar);
 
 #endif /* CACACOMUN_H_ */
