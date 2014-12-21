@@ -940,8 +940,9 @@ static inline int *grafo_apuntador_num_nodos_asociados(nodo *nodo,
 	return num_nodos;
 }
 
-void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *datos,
-		int num_datos, nodo_arbol_binario **arreglo_referencias_nodos) {
+void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *indices,
+		tipo_dato *datos, int num_datos,
+		nodo_arbol_binario **arreglo_referencias_nodos) {
 	int i = 0;
 	tipo_dato dato_actual = 0;
 	nodo_arbol_binario *nodo_actual = NULL;
@@ -953,22 +954,46 @@ void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *datos,
 
 	ctx->raiz->valor = *datos;
 
+	if (indices) {
+		ctx->raiz->indice = *indices;
+	} else {
+		ctx->raiz->indice = 0;
+	}
+	if (arreglo_referencias_nodos) {
+		if (indices) {
+			*(arreglo_referencias_nodos + *(indices + 0)) = ctx->raiz;
+
+		} else {
+			*(arreglo_referencias_nodos + 0) = ctx->raiz;
+		}
+	}
+
 	for (i = 1; i < num_datos; i++) {
 		dato_actual = *(datos + i);
 		nodo_actual = arbol_binario_nodo_allocar(ctx, 1);
 
 		nodo_actual->valor = dato_actual;
+		if (indices) {
+			nodo_actual->indice = *(indices + i);
+		} else {
+			nodo_actual->indice = i;
+		}
 
-		arbol_avl_insertar(&ctx->raiz, nodo_actual);
+		arbol_avl_insertar(&ctx->raiz, nodo_actual, ctx->no_indices_repetidos);
 		if (arreglo_referencias_nodos) {
-			*(arreglo_referencias_nodos + dato_actual) = nodo_actual;
+			if (indices) {
+				*(arreglo_referencias_nodos + *(indices + i)) = nodo_actual;
+
+			} else {
+				*(arreglo_referencias_nodos + i) = nodo_actual;
+			}
 		}
 		caca_log_debug("Raiz actual %ld", ctx->raiz->valor);
 	}
 }
 
 void arbol_avl_insertar(nodo_arbol_binario **raiz,
-		nodo_arbol_binario *nodo_a_insertar) {
+		nodo_arbol_binario *nodo_a_insertar, bool no_indices_repetidos) {
 	nodo_arbol_binario *raiz_int = NULL;
 
 	raiz_int = *raiz;
@@ -984,7 +1009,8 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 		caca_log_debug("Insercion BST a la der");
 		if (raiz_int->hijo_der) {
 			caca_log_debug("Recursiva");
-			arbol_avl_insertar(&raiz_int->hijo_der, nodo_a_insertar);
+			arbol_avl_insertar(&raiz_int->hijo_der, nodo_a_insertar,
+					no_indices_repetidos);
 		} else {
 			raiz_int->hijo_der = nodo_a_insertar;
 			ARBOL_BINARIO_ACTUALIZAR_PADRE(nodo_a_insertar, raiz_int);
@@ -994,7 +1020,8 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 		caca_log_debug("Insercion BST a la izq");
 		if (raiz_int->hijo_izq) {
 			caca_log_debug("Recursiva %p", &raiz_int->hijo_izq);
-			arbol_avl_insertar(&raiz_int->hijo_izq, nodo_a_insertar);
+			arbol_avl_insertar(&raiz_int->hijo_izq, nodo_a_insertar,
+					no_indices_repetidos);
 		} else {
 			caca_log_debug("Directa");
 			raiz_int->hijo_izq = nodo_a_insertar;
@@ -1002,8 +1029,20 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 		}
 		break;
 	case CACA_COMPARACION_IZQ_IGUAL:
-		perror("NO mames, una llave repetida, ahhhhh !");
-		exit(1);
+		if (no_indices_repetidos) {
+			perror("NO mames, una llave repetida, ahhhhh !");
+			exit(1);
+		} else {
+			caca_log_debug("Insercion BST a la der aunke las llaves son =s");
+			if (raiz_int->hijo_der) {
+				caca_log_debug("Recursiva");
+				arbol_avl_insertar(&raiz_int->hijo_der, nodo_a_insertar,
+						no_indices_repetidos);
+			} else {
+				raiz_int->hijo_der = nodo_a_insertar;
+				ARBOL_BINARIO_ACTUALIZAR_PADRE(nodo_a_insertar, raiz_int);
+			}
+		}
 		break;
 	default:
 		perror("NO mames, resultado increible en arbol_avl_insertar!");
@@ -1174,14 +1213,14 @@ static inline char *arbol_binario_nodo_a_cadena(nodo_arbol_binario *node,
 
 	characteres_escritos_int =
 			sprintf(cadena_buffer,
-					"{valor:%ld, altura %d, direccion %p, hijo izq:%ld (%p), hijo der:%ld (%p), padre:%ld (%p)}  ",
-					node->valor, ARBOL_AVL_GET_ALTURA(node), node,
+					"{indice:%ld, valor:%ld, altura %d, direccion %p, hijo izq:%ld (%p), hijo der:%ld (%p), padre:%ld (%p)}  ",
+					node->indice, node->valor, ARBOL_AVL_GET_ALTURA(node), node,
 					ARBOL_AVL_GET_VALOR(node->hijo_izq), node->hijo_izq,
 					ARBOL_AVL_GET_VALOR(node->hijo_der), node->hijo_der,
 					ARBOL_AVL_GET_VALOR(node->padre), node->padre);
 
 	if (characteres_escritos) {
-		*characteres_escritos = characteres_escritos;
+		*characteres_escritos = characteres_escritos_int;
 	}
 	return cadena_buffer;
 }
@@ -1370,7 +1409,9 @@ void arbol_avl_borrar(nodo_arbol_binario **raiz, tipo_dato valor_a_borrar) {
 void arbol_avl_borrar_referencia_directa(nodo_arbol_binario *nodo_a_borrar) {
 
 	nodo_arbol_binario *ancestro_actual = NULL;
-	nodo_arbol_binario *nodo_a_borrar_padre= NULL;
+	nodo_arbol_binario *nodo_a_borrar_padre = NULL;
+	nodo_arbol_binario *nodo_min = NULL;
+
 	nodo_arbol_binario **ancestro_actual_apuntador = NULL;
 	nodo_arbol_binario **nodo_a_borrar_ref = NULL;
 
@@ -1385,7 +1426,8 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario *nodo_a_borrar) {
 		return;
 	}
 
-	caca_log_debug("Calculando referencia en arbolazo, padre %p",nodo_a_borrar_padre);
+	caca_log_debug("Calculando referencia en arbolazo, padre %p",
+			nodo_a_borrar_padre);
 	nodo_a_borrar_ref =
 			nodo_a_borrar->valor < (nodo_a_borrar_padre)->valor ?
 					&nodo_a_borrar_padre->hijo_izq :
@@ -1397,12 +1439,19 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario *nodo_a_borrar) {
 	ancestro_actual_apuntador = &nodo_a_borrar->padre;
 
 	if (!nodo_a_borrar->hijo_izq) {
+		caca_log_debug("Borrando directamente sin hijo izq");
 		*nodo_a_borrar_ref = nodo_a_borrar->hijo_der;
 	} else {
 		if (!nodo_a_borrar->hijo_der) {
+			caca_log_debug("Borrando directamente sin hijo der");
 			*nodo_a_borrar_ref = nodo_a_borrar->hijo_izq;
 		} else {
-			perror("Me lleva, intentando borrar nodo que no es hoja");
+			caca_log_debug("Borrando nodo intermedio");
+			nodo_min = arbol_binario_get_nodo_minimo_valor(
+					nodo_a_borrar->hijo_der);
+			nodo_a_borrar->valor = nodo_min->valor;
+			arbol_avl_borrar_referencia_directa(nodo_min);
+			nodo_min->hijo_der = nodo_min->hijo_izq = NULL;
 		}
 	}
 
@@ -1462,4 +1511,21 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario *nodo_a_borrar) {
 		ancestro_actual = ancestro_actual->padre;
 		ancestro_actual_apuntador = &ancestro_actual->padre;
 	} while (ancestro_actual);
+}
+
+void dijkstra_modificar_valor_nodo(nodo_arbol_binario **raiz,
+		nodo_arbol_binario **referencias_directas, tipo_dato indice,
+		tipo_dato nuevo_valor) {
+	nodo_arbol_binario *referencia_directa = NULL;
+
+	referencia_directa = *(referencias_directas + indice);
+
+	caca_log_debug("Modificando valor de %ld, indice %ld",
+			referencia_directa->valor, indice);
+
+	arbol_avl_borrar_referencia_directa(referencia_directa);
+
+	referencia_directa->valor = nuevo_valor;
+
+	arbol_avl_insertar(raiz, referencia_directa, falso);
 }

@@ -284,7 +284,7 @@ START_TEST( test_init_arbol_avl)
 		tipo_dato valores_preorder_resultado[6] = { 0 };
 		arbol_binario_contexto ctx;
 
-		arbol_avl_init(&ctx, (unsigned long *) VALORES, 6, NULL );
+		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 6, NULL );
 
 		arbol_binario_colectar_datos_recorrido_preoder(ctx.raiz,
 				valores_preorder_resultado, &resultado);
@@ -310,7 +310,7 @@ START_TEST( test_borrar_arbol_binario)
 		tipo_dato valores_preorder_resultado[4] = { 0 };
 		arbol_binario_contexto ctx;
 
-		arbol_avl_init(&ctx, (unsigned long *) VALORES, 7, NULL );
+		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 7, NULL );
 
 		arbol_binario_borrar_nodo(&ctx.raiz, 20);
 		arbol_binario_borrar_nodo(&ctx.raiz, 30);
@@ -342,7 +342,7 @@ START_TEST( test_borrar_arbol_avl)
 		tipo_dato valores_preorder_resultado[8] = { 0 };
 		arbol_binario_contexto ctx;
 
-		arbol_avl_init(&ctx, (unsigned long *) VALORES, 9, NULL );
+		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9, NULL );
 
 		caca_log_debug("La secuencia inicial es:");
 		arbol_binario_recorrido_preoder(ctx.raiz);
@@ -375,13 +375,13 @@ START_TEST( test_borrar_arbol_avl_ref_dir)
 		tipo_dato valores_preorder_resultado[8] = { 0 };
 		nodo_arbol_binario *referencias_directas[9] = { NULL };
 
-		arbol_avl_init(&ctx, (unsigned long *) VALORES, 9,
+		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9,
 				referencias_directas);
 
 		caca_log_debug("La secuencia inicial es:");
 		arbol_binario_recorrido_inoder(ctx.raiz);
 
-		arbol_avl_borrar_referencia_directa(*(referencias_directas + 0));
+		arbol_avl_borrar_referencia_directa(*(referencias_directas + 6));
 
 		arbol_binario_colectar_datos_recorrido_inoder(ctx.raiz,
 				valores_preorder_resultado, &resultado);
@@ -400,6 +400,53 @@ START_TEST( test_borrar_arbol_avl_ref_dir)
 		zlog_fini();
 
 		ck_assert_msg(!resultado, "todo en orden %d", resultado);
+	}END_TEST
+
+START_TEST( test_dijkstra_modificar_valor_nodo)
+	{
+
+		const tipo_dato VALORES[9] = { 9, 5, 10, 1, 6, 11, 0, 2, 3 };
+		const tipo_dato VALORES_FINALES_INORDER[9] = { 0, 1, 2, 3, 4, 5, 6, 9,
+				10 };
+
+		int resultado = 0;
+		int num_datos_colectados = 0;
+		arbol_binario_contexto ctx;
+		tipo_dato valores_preorder_resultado[9] = { 0 };
+		nodo_arbol_binario *referencias_directas[9] = { NULL };
+
+		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9,
+				referencias_directas);
+
+		for (int i = 0; i < 9; i++) {
+			caca_log_debug("referencias directas indice %d  valor %ld", i,
+					(*(referencias_directas + i))->valor);
+		}
+
+		caca_log_debug("La secuencia inicial es:");
+		arbol_binario_recorrido_inoder(ctx.raiz);
+
+		dijkstra_modificar_valor_nodo(&ctx.raiz, referencias_directas, 5, 4);
+
+		arbol_binario_colectar_datos_recorrido_inoder(ctx.raiz,
+				valores_preorder_resultado, &num_datos_colectados);
+
+		for (int i = 0; i < 9; i++) {
+			caca_log_debug("eien pressure %d %ld", i,
+					*(valores_preorder_resultado + i));
+		}
+
+		resultado = num_datos_colectados == 9
+				&& !memcmp(VALORES_FINALES_INORDER, valores_preorder_resultado,
+						9) && (*(referencias_directas + 5))->valor == 4;
+
+		caca_log_debug("La secuencia final es:");
+		arbol_binario_recorrido_inoder(ctx.raiz);
+
+		zlog_fini();
+
+		ck_assert_msg(resultado, "los datos colectados %d",
+				num_datos_colectados);
 	}END_TEST
 
 Suite *
@@ -423,6 +470,8 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_borrar_arbol_binario);
 	tcase_add_test(tc_core, test_borrar_arbol_avl);
 	tcase_add_test(tc_core, test_borrar_arbol_avl_ref_dir);
+	tcase_add_test(tc_core, test_dijkstra_modificar_valor_nodo);
+
 	suite_add_tcase(s, tc_core);
 
 	return s;

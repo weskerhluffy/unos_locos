@@ -169,6 +169,8 @@ typedef struct nodo_arbol_binario {
 	tipo_dato indice;
 	tipo_dato valor;
 	unsigned int altura;
+
+
 	struct nodo_arbol_binario *hijo_izq;
 	struct nodo_arbol_binario *hijo_der;
 	struct nodo_arbol_binario *padre;
@@ -183,6 +185,7 @@ typedef struct grifo_contexto {
 } grafo_contexto;
 
 typedef struct arbol_binario_contexto {
+	bool no_indices_repetidos;
 	int localidades_usadas;
 	nodo_arbol_binario *raiz;
 	nodo_arbol_binario nodos_disponibles[MAX_NODOS];
@@ -262,8 +265,9 @@ void imprimir_lista_adjacencia(nodo *nodo_inicial);
 static inline int *grafo_apuntador_num_nodos_asociados(nodo *nodo,
 		GRAFO_CRITERIOS_ORDENACION criterio_busqueda);
 
-void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *datos,
-		int num_datos, nodo_arbol_binario **arreglo_referencias_nodos);
+void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *indices,
+		tipo_dato *datos, int num_datos,
+		nodo_arbol_binario **arreglo_referencias_nodos);
 
 #define ARBOL_AVL_ALTURA_CARGADA_IZQ -1
 #define ARBOL_AVL_ALTURA_CARGADA_DER 1
@@ -285,7 +289,7 @@ void arbol_binario_colectar_datos_recorrido_preoder(nodo_arbol_binario *raiz,
 		tipo_dato *datos_ordenados, int *num_datos_colectados);
 
 void arbol_avl_insertar(nodo_arbol_binario **raiz,
-		nodo_arbol_binario *nodo_a_insertar);
+		nodo_arbol_binario *nodo_a_insertar, bool no_indices_repetidos);
 
 static inline int arbol_avl_compara_nodos(nodo_arbol_binario *nodo1,
 		nodo_arbol_binario *nodo2);
@@ -306,5 +310,9 @@ void arbol_binario_recorrido_inoder(nodo_arbol_binario *raiz);
 void arbol_avl_borrar(nodo_arbol_binario **raiz, tipo_dato valor_a_borrar);
 
 void arbol_avl_borrar_referencia_directa(nodo_arbol_binario *nodo_a_borrar);
+
+void dijkstra_modificar_valor_nodo(nodo_arbol_binario **raiz,
+		nodo_arbol_binario **referencias_directas, tipo_dato indice,
+		tipo_dato nuevo_valor);
 
 #endif /* CACACOMUN_H_ */
