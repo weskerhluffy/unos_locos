@@ -170,7 +170,6 @@ typedef struct nodo_arbol_binario {
 	tipo_dato valor;
 	unsigned int altura;
 
-
 	struct nodo_arbol_binario *hijo_izq;
 	struct nodo_arbol_binario *hijo_der;
 	struct nodo_arbol_binario *padre;
@@ -190,6 +189,13 @@ typedef struct arbol_binario_contexto {
 	nodo_arbol_binario *raiz;
 	nodo_arbol_binario nodos_disponibles[MAX_NODOS];
 } arbol_binario_contexto;
+
+typedef struct cola_prioridad_contexto {
+	arbol_binario_contexto *actx;
+	nodo_arbol_binario **referencias_directas_por_indice;
+} cola_prioridad_contexto;
+
+typedef nodo_arbol_binario nodo_cola_prioridad;
 
 zlog_category_t *cacategoria = NULL;
 
@@ -311,8 +317,12 @@ void arbol_avl_borrar(nodo_arbol_binario **raiz, tipo_dato valor_a_borrar);
 
 void arbol_avl_borrar_referencia_directa(nodo_arbol_binario *nodo_a_borrar);
 
-void dijkstra_modificar_valor_nodo(nodo_arbol_binario **raiz,
-		nodo_arbol_binario **referencias_directas, tipo_dato indice,
-		tipo_dato nuevo_valor);
+void cola_prioridad_modificar_valor_nodo(cola_prioridad_contexto *cpctx,
+		tipo_dato indice, tipo_dato nuevo_valor);
+
+void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
+		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino);
+
+void cola_prioridad_init(cola_prioridad_contexto *ctx,nodo_cola_prioridad *nodos);
 
 #endif /* CACACOMUN_H_ */

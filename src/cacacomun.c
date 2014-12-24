@@ -1513,10 +1513,14 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario *nodo_a_borrar) {
 	} while (ancestro_actual);
 }
 
-void dijkstra_modificar_valor_nodo(nodo_arbol_binario **raiz,
-		nodo_arbol_binario **referencias_directas, tipo_dato indice,
-		tipo_dato nuevo_valor) {
+void cola_prioridad_modificar_valor_nodo(cola_prioridad_contexto *cpctx,
+		tipo_dato indice, tipo_dato nuevo_valor) {
 	nodo_arbol_binario *referencia_directa = NULL;
+	nodo_arbol_binario **referencias_directas = NULL;
+	nodo_arbol_binario **raiz = NULL;
+
+	referencias_directas = cpctx->referencias_directas_por_indice;
+	raiz = &cpctx->actx->raiz;
 
 	referencia_directa = *(referencias_directas + indice);
 
@@ -1528,4 +1532,102 @@ void dijkstra_modificar_valor_nodo(nodo_arbol_binario **raiz,
 	referencia_directa->valor = nuevo_valor;
 
 	arbol_avl_insertar(raiz, referencia_directa, falso);
+}
+
+void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
+		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
+		tipo_dato *antecesores) {
+
+	GRAFO_TIPO_RESULTADO_BUSQUEDA tipo_resultado;
+
+	tipo_dato dist_origen_dest = 0;
+
+	nodo nodo_tmp;
+
+	nodo_arbol_binario *distancia_min_origen = NULL;
+	nodo_arbol_binario *distancia_min_destino = NULL;
+	nodo_arbol_binario **distancias_minimas = NULL;
+	nodo *nodos_encontrados[2] = { NULL };
+
+	nodo_tmp.indice = ind_nodo_origen;
+	tipo_resultado = busqueda_binaria(gctx->inicio, &nodo_tmp, GRAFO_PRINCIPAL,
+			(void *) nodos_encontrados);
+
+	if (tipo_resultado != GRAFO_NODO_ENCONTRADO) {
+		perror("El nodo origen no fue en contrado n l grafo");
+	}
+
+	nodo_tmp.indice = ind_nodo_destino;
+	tipo_resultado = busqueda_binaria((*nodos_encontrados)->siguiente_indice,
+			nodo_tmp, GRAFO_INDICE, (void *) nodos_encontrados);
+
+	if (tipo_resultado != GRAFO_NODO_ENCONTRADO) {
+		perror("El nodo destino no fue encontrado aunke el oringen si");
+	}
+
+	dist_origen_dest = (*nodos_encontrados)->distancia;
+
+	distancias_minimas = cpctx->referencias_directas_por_indice;
+
+	distancia_min_origen = *(distancias_minimas + ind_nodo_origen);
+	distancia_min_destino = *(distancias_minimas + ind_nodo_destino);
+
+	if (distancia_min_destino->valor
+			> distancia_min_origen->valor + dist_origen_dest) {
+		cola_prioridad_modificar_valor_nodo(cpctx, ind_nodo_destino,
+				distancia_min_origen->valor + dist_origen_dest);
+		*(antecesores + ind_nodo_destino) = ind_nodo_origen;
+	}
+}
+
+void dijkstra_main(void *matrix_distancias, int num_filas,
+		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
+		tipo_dato *distancias_minimas, int *antecesores) {
+
+	int contador = 0;
+
+	grafo_contexto gctx;
+	cola_prioridad_contexto cpctx;
+
+	bool *nodos_distancias_minimas_calculadas[MAX_NODOS];
+	nodo *nodo_actual;
+	nodo_cola_prioridad * distancias_minimas[MAX_NODOS];
+
+	init_grafo(matrix_distancias, num_filas, &gctx, falso, verdadero);
+
+	nodo_actual = gctx->inicio;
+
+	while (nodo_actual) {
+		if (nodo_actual->indice == ind_nodo_origen) {
+			*(distancias_minimas + nodo_actual->indice) = 0;
+		} else {
+			*(distancias_minimas + nodo_actual->indice) = MAX_VALOR;
+		}
+		GRAFO_AVANZAR_NODO(nodo_actual, GRAFO_PRINCIPAL, verdadero);
+		contador++;
+	}
+
+	cola_prioridad_init(&cpctx, distancias_minimas, contador);
+
+}
+
+void cola_prioridad_init(cola_prioridad_contexto *ctx,
+		nodo_cola_prioridad *nodos, int num_nodos) {
+	arbol_binario_contexto actx;
+	tipo_dato indices[MAX_NODOS];
+	tipo_dato datos[MAX_NODOS];
+
+	for (int i = 0; i < num_nodos; i++) {
+		*(indices + i) = (*(nodos + i))->indice;
+		*(datos + i) = (*(nodos + i))->valor;
+	}
+
+	arbol_avl_init(actx, indices, datos, num_nodos,
+			ctx->referencias_directas_por_indice);
+
+	ctx->actx = actx;
+}
+
+void cola_prioridad_pop(){
+	dsasd
 }
