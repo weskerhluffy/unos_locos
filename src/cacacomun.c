@@ -1635,6 +1635,7 @@ nodo_cola_prioridad *cola_prioridad_pop(cola_prioridad_contexto *ctx) {
 
 	nodo_actual = ctx->actx->raiz;
 
+
 	while (nodo_actual) {
 		nodo_anterior = nodo_actual;
 		nodo_actual = nodo_actual->hijo_izq;
