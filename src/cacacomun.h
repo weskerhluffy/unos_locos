@@ -206,7 +206,7 @@ const char* GRAFO_NOMBRES_CRITERIOS_ORDENACION[GRAFO_PRINCIPAL + 1] = {
 		};
 #undef ADDITEM
 int lee_matriz_int_archivo(const char * nombre_archivo,
-		tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT], int *filas);
+tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT], int *filas);
 
 int lee_matriz_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 		int *filas);
@@ -272,8 +272,7 @@ static inline int *grafo_apuntador_num_nodos_asociados(nodo *nodo,
 		GRAFO_CRITERIOS_ORDENACION criterio_busqueda);
 
 void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *indices,
-		tipo_dato *datos, int num_datos,
-		nodo_arbol_binario **arreglo_referencias_nodos);
+tipo_dato *datos, int num_datos, nodo_arbol_binario **arreglo_referencias_nodos);
 
 #define ARBOL_AVL_ALTURA_CARGADA_IZQ -1
 #define ARBOL_AVL_ALTURA_CARGADA_DER 1
@@ -292,7 +291,7 @@ static inline nodo_arbol_binario *arbol_binario_nodo_allocar(
 void arbol_binario_recorrido_preoder(nodo_arbol_binario *raiz);
 
 void arbol_binario_colectar_datos_recorrido_preoder(nodo_arbol_binario *raiz,
-		tipo_dato *datos_ordenados, int *num_datos_colectados);
+tipo_dato *datos_ordenados, int *num_datos_colectados);
 
 void arbol_avl_insertar(nodo_arbol_binario **raiz,
 		nodo_arbol_binario *nodo_a_insertar, bool no_indices_repetidos);
@@ -306,10 +305,10 @@ static inline void arbol_binario_rotar_izq(nodo_arbol_binario **nodo);
 static inline void arbol_binario_rotar_der(nodo_arbol_binario **nodo);
 
 void arbol_binario_borrar_nodo(nodo_arbol_binario **raiz,
-		tipo_dato valor_a_borrar);
+tipo_dato valor_a_borrar);
 
 void arbol_binario_colectar_datos_recorrido_inoder(nodo_arbol_binario *raiz,
-		tipo_dato *datos_ordenados, int *num_datos_colectados);
+tipo_dato *datos_ordenados, int *num_datos_colectados);
 
 void arbol_binario_recorrido_inoder(nodo_arbol_binario *raiz);
 
@@ -318,11 +317,13 @@ void arbol_avl_borrar(nodo_arbol_binario **raiz, tipo_dato valor_a_borrar);
 void arbol_avl_borrar_referencia_directa(nodo_arbol_binario *nodo_a_borrar);
 
 void cola_prioridad_modificar_valor_nodo(cola_prioridad_contexto *cpctx,
-		tipo_dato indice, tipo_dato nuevo_valor);
+tipo_dato indice, tipo_dato nuevo_valor);
 
 void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
-		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino);
+		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
+		tipo_dato *antecesores);
 
-void cola_prioridad_init(cola_prioridad_contexto *ctx,nodo_cola_prioridad *nodos);
+void cola_prioridad_init(cola_prioridad_contexto *ctx,
+		nodo_cola_prioridad *nodos, int num_nodos);
 
 #endif /* CACACOMUN_H_ */

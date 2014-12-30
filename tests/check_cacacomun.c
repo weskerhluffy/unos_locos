@@ -82,7 +82,7 @@ START_TEST( test_lee_matrix_long_stdin)
 // XXX: http://stackoverflow.com/questions/13274786/how-to-share-memory-between-process-fork
 // XXX: https://code.google.com/p/asmjit/issues/detail?id=1
 		resultado_assestment = mmap(NULL, sizeof *resultado_assestment,
-				PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0);
+		PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0);
 
 		for (i = 0; i < 3; i++) {
 			apuntador_linea = *(cagada + i);
@@ -90,8 +90,8 @@ START_TEST( test_lee_matrix_long_stdin)
 			for (j = 0; j < 3; j++) {
 				numero_actual = *(*(VALORES_ESPERADOS + i) + j);
 				if (numero_actual) {
-					caracteres_escritos =
-							sprintf(apuntador_linea, "%ld", numero_actual);
+					caracteres_escritos = sprintf(apuntador_linea, "%ld",
+							numero_actual);
 					zlog_debug(c, "en %d %d el num %ld", i, j, numero_actual);
 					if (caracteres_escritos < 0) {
 						fprintf(stderr,
@@ -284,7 +284,7 @@ START_TEST( test_init_arbol_avl)
 		tipo_dato valores_preorder_resultado[6] = { 0 };
 		arbol_binario_contexto ctx;
 
-		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 6, NULL );
+		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 6, NULL);
 
 		arbol_binario_colectar_datos_recorrido_preoder(ctx.raiz,
 				valores_preorder_resultado, &resultado);
@@ -310,7 +310,7 @@ START_TEST( test_borrar_arbol_binario)
 		tipo_dato valores_preorder_resultado[4] = { 0 };
 		arbol_binario_contexto ctx;
 
-		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 7, NULL );
+		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 7, NULL);
 
 		arbol_binario_borrar_nodo(&ctx.raiz, 20);
 		arbol_binario_borrar_nodo(&ctx.raiz, 30);
@@ -342,7 +342,7 @@ START_TEST( test_borrar_arbol_avl)
 		tipo_dato valores_preorder_resultado[8] = { 0 };
 		arbol_binario_contexto ctx;
 
-		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9, NULL );
+		arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9, NULL);
 
 		caca_log_debug("La secuencia inicial es:");
 		arbol_binario_recorrido_preoder(ctx.raiz);
