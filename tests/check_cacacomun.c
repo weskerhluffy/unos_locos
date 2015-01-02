@@ -412,6 +412,7 @@ START_TEST( test_dijkstra_modificar_valor_nodo)
 		int resultado = 0;
 		int num_datos_colectados = 0;
 		arbol_binario_contexto ctx;
+		cola_prioridad_contexto cpctx;
 		tipo_dato valores_preorder_resultado[9] = { 0 };
 		nodo_arbol_binario *referencias_directas[9] = { NULL };
 
@@ -426,7 +427,10 @@ START_TEST( test_dijkstra_modificar_valor_nodo)
 		caca_log_debug("La secuencia inicial es:");
 		arbol_binario_recorrido_inoder(ctx.raiz);
 
-		dijkstra_modificar_valor_nodo(&ctx.raiz, referencias_directas, 5, 4);
+		cola_prioridad_init(&cpctx, NULL, NULL, NULL, 0, &ctx,
+				referencias_directas);
+
+		cola_prioridad_modificar_valor_nodo(&cpctx, 5, 4);
 
 		arbol_binario_colectar_datos_recorrido_inoder(ctx.raiz,
 				valores_preorder_resultado, &num_datos_colectados);
@@ -442,6 +446,56 @@ START_TEST( test_dijkstra_modificar_valor_nodo)
 
 		caca_log_debug("La secuencia final es:");
 		arbol_binario_recorrido_inoder(ctx.raiz);
+
+		zlog_fini();
+
+		ck_assert_msg(resultado, "los datos colectados %d",
+				num_datos_colectados);
+	}END_TEST
+
+START_TEST( test_cola_prioridad_pop)
+	{
+
+		const int NUM_VALORES = 9;
+
+		const tipo_dato VALORES[NUM_VALORES] = { 9, 5, 10, 1, 6, 11, 0, 2, 3 };
+		const tipo_dato VALORES_FINALES_INORDER[NUM_VALORES - 2] = { 2, 3, 4, 5,
+				6, 9, 10 };
+
+		int resultado = 0;
+		int num_datos_colectados = 0;
+		cola_prioridad_contexto ctx;
+		tipo_dato valores_inorder_resultado[NUM_VALORES] = { 0 };
+		nodo_cola_prioridad **referencias_directas = NULL;
+		nodo_cola_prioridad *nodo_pop_1 = NULL;
+		nodo_cola_prioridad *nodo_pop_2 = NULL;
+
+		caca_log_debug("empezando el año");
+
+		cola_prioridad_init(&ctx, NULL, (unsigned long *) VALORES, NULL,
+				NUM_VALORES, NULL,NULL);
+
+		referencias_directas = ctx.referencias_directas_por_indice;
+
+		for (int i = 0; i < NUM_VALORES; i++) {
+			caca_log_debug("referencias directas indice %d  valor %ld", i,
+					(*(referencias_directas + i))->valor);
+		}
+
+		nodo_pop_1 = cola_prioridad_pop(&ctx);
+		nodo_pop_2 = cola_prioridad_pop(&ctx);
+
+		cola_prioridad_get_valores(&ctx, valores_inorder_resultado,
+				&num_datos_colectados);
+
+		for (int i = 0; i < NUM_VALORES; i++) {
+			caca_log_debug("eien pressure %d %ld", i,
+					*(valores_inorder_resultado + i));
+		}
+
+		resultado = num_datos_colectados == (NUM_VALORES - 2)
+				&& !memcmp(VALORES_FINALES_INORDER, valores_inorder_resultado,
+						9) && nodo_pop_1->valor == 0 && nodo_pop_2->valor == 1;
 
 		zlog_fini();
 
@@ -471,6 +525,7 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_borrar_arbol_avl);
 	tcase_add_test(tc_core, test_borrar_arbol_avl_ref_dir);
 	tcase_add_test(tc_core, test_dijkstra_modificar_valor_nodo);
+	tcase_add_test(tc_core, test_cola_prioridad_pop);
 
 	suite_add_tcase(s, tc_core);
 

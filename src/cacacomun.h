@@ -191,7 +191,9 @@ typedef struct arbol_binario_contexto {
 } arbol_binario_contexto;
 
 typedef struct cola_prioridad_contexto {
+	arbol_binario_contexto actx_mem;
 	arbol_binario_contexto *actx;
+	nodo_arbol_binario *referencias_directas_por_indice_mem[MAX_NODOS];
 	nodo_arbol_binario **referencias_directas_por_indice;
 } cola_prioridad_contexto;
 
@@ -320,10 +322,16 @@ void cola_prioridad_modificar_valor_nodo(cola_prioridad_contexto *cpctx,
 tipo_dato indice, tipo_dato nuevo_valor);
 
 void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
-		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
-		tipo_dato *antecesores);
+tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
+tipo_dato *antecesores);
 
 void cola_prioridad_init(cola_prioridad_contexto *ctx,
-		nodo_cola_prioridad *nodos, int num_nodos);
+		nodo_cola_prioridad *nodos, tipo_dato *valores, tipo_dato *indices,
+		int num_nodos, arbol_binario_contexto *actx,nodo_arbol_binario **referencias_directas) ;
+
+void cola_prioridad_get_valores(cola_prioridad_contexto *ctx,
+tipo_dato *valores, int *num_valores);
+
+nodo_cola_prioridad *cola_prioridad_pop(cola_prioridad_contexto *ctx);
 
 #endif /* CACACOMUN_H_ */

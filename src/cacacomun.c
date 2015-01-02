@@ -1588,7 +1588,7 @@ tipo_dato *distancias_minimas, int *antecesores) {
 	grafo_contexto gctx;
 	cola_prioridad_contexto cpctx;
 
-	bool *nodos_distancias_minimas_calculadas[MAX_NODOS];
+//	bool *nodos_distancias_minimas_calculadas[MAX_NODOS];
 	nodo *nodo_actual;
 	nodo_cola_prioridad distancias_minimas_nodos[MAX_NODOS];
 
@@ -1608,25 +1608,51 @@ tipo_dato *distancias_minimas, int *antecesores) {
 		contador++;
 	}
 
-	cola_prioridad_init(&cpctx, distancias_minimas_nodos, contador);
+	cola_prioridad_init(&cpctx, distancias_minimas_nodos, NULL, NULL, contador,
+			NULL,NULL);
 
 }
 
 void cola_prioridad_init(cola_prioridad_contexto *ctx,
-		nodo_cola_prioridad *nodos, int num_nodos) {
-	arbol_binario_contexto actx;
-	tipo_dato indices[MAX_NODOS];
+		nodo_cola_prioridad *nodos, tipo_dato *valores, tipo_dato *indices,
+		int num_nodos, arbol_binario_contexto *actx,nodo_arbol_binario **referencias_directas) {
+	tipo_dato indices_int[MAX_NODOS];
 	tipo_dato datos[MAX_NODOS];
 
-	for (int i = 0; i < num_nodos; i++) {
-		*(indices + i) = (nodos + i)->indice;
-		*(datos + i) = (nodos + i)->valor;
+	if (actx) {
+		if(!referencias_directas){
+			perror("se paso un contexto de arbol sin referencias directas");
+			exit(1);
+		}
+		ctx->actx = actx;
+		ctx->referencias_directas_por_indice =referencias_directas;
+	} else {
+		for (int i = 0; i < num_nodos; i++) {
+			if (nodos) {
+				*(indices_int + i) = (nodos + i)->indice;
+				*(datos + i) = (nodos + i)->valor;
+			} else {
+				if (!valores) {
+					perror("no se proporcionaron nodos ni valores");
+					exit(1);
+				}
+				if (indices) {
+					*(indices_int + i) = *(indices + i);
+				} else {
+					*(indices_int + i) = i;
+				}
+				*(datos + i) = *(valores + i);
+			}
+		}
+
+		ctx->actx = &ctx->actx_mem;
+		ctx->referencias_directas_por_indice =
+				ctx->referencias_directas_por_indice_mem;
+
+		arbol_avl_init(ctx->actx, indices, datos, num_nodos,
+				ctx->referencias_directas_por_indice);
 	}
 
-	arbol_avl_init(&actx, indices, datos, num_nodos,
-			ctx->referencias_directas_por_indice);
-
-	ctx->actx = &actx;
 }
 
 nodo_cola_prioridad *cola_prioridad_pop(cola_prioridad_contexto *ctx) {
@@ -1635,13 +1661,18 @@ nodo_cola_prioridad *cola_prioridad_pop(cola_prioridad_contexto *ctx) {
 
 	nodo_actual = ctx->actx->raiz;
 
-
 	while (nodo_actual) {
 		nodo_anterior = nodo_actual;
 		nodo_actual = nodo_actual->hijo_izq;
 	}
 
-	arbol_avl_borrar_referencia_directa(nodo_actual);
+	arbol_avl_borrar_referencia_directa(nodo_anterior);
 
 	return nodo_anterior;
+}
+
+void cola_prioridad_get_valores(cola_prioridad_contexto *ctx,
+tipo_dato *valores, int *num_valores) {
+	arbol_binario_colectar_datos_recorrido_inoder(ctx->actx->raiz, valores,
+			num_valores);
 }
