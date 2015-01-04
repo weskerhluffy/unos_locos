@@ -133,6 +133,9 @@ typedef enum BOOLEANOS {
 #define ARBOL_AVL_GET_PADRE(nodo) \
 	((nodo)?(nodo)->padre:NULL)
 
+#define ARBOL_AVL_GET_INDICE(nodo) \
+	((nodo)?(nodo)->indice:-1)
+
 // XXX: http://www.programiz.com/c-programming/c-enumeration
 #undef  ADDITEM
 #define ADDITEM( criterio_ordenacion, comentario) criterio_ordenacion
@@ -327,11 +330,28 @@ tipo_dato *antecesores);
 
 void cola_prioridad_init(cola_prioridad_contexto *ctx,
 		nodo_cola_prioridad *nodos, tipo_dato *valores, tipo_dato *indices,
-		int num_nodos, arbol_binario_contexto *actx,nodo_arbol_binario **referencias_directas) ;
+		int num_nodos, arbol_binario_contexto *actx,
+		nodo_arbol_binario **referencias_directas);
 
 void cola_prioridad_get_valores(cola_prioridad_contexto *ctx,
 tipo_dato *valores, int *num_valores);
 
 nodo_cola_prioridad *cola_prioridad_pop(cola_prioridad_contexto *ctx);
+
+bool cola_prioridad_es_vacia(cola_prioridad_contexto *ctx);
+
+nodo *grafo_get_nodo_origen_por_indice(grafo_contexto *ctx, tipo_dato indice);
+
+nodo *grafo_get_nodo_destino_por_indice(grafo_contexto *ctx, nodo *nodo_origen,
+tipo_dato indice);
+
+tipo_dato grafo_get_distancia_entre_nodos_por_indice(grafo_contexto *ctx,
+tipo_dato indice_origen, tipo_dato indice_destino);
+
+void dijkstra_main(void *matrix_distancias, int num_filas,
+tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
+tipo_dato *distancias_minimas, tipo_dato *antecesores);
+
+char *arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer);
 
 #endif /* CACACOMUN_H_ */

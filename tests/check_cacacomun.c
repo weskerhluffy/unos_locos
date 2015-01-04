@@ -473,7 +473,7 @@ START_TEST( test_cola_prioridad_pop)
 		caca_log_debug("empezando el año");
 
 		cola_prioridad_init(&ctx, NULL, (unsigned long *) VALORES, NULL,
-				NUM_VALORES, NULL,NULL);
+				NUM_VALORES, NULL, NULL);
 
 		referencias_directas = ctx.referencias_directas_por_indice;
 
@@ -503,6 +503,38 @@ START_TEST( test_cola_prioridad_pop)
 				num_datos_colectados);
 	}END_TEST
 
+START_TEST( test_dijkstra)
+	{
+
+		const int NUM_VERTICES = 14;
+
+		const tipo_dato VERTICES[NUM_VERTICES][3] = { { 0, 1, 4 }, { 0, 7, 8 },
+				{ 1, 7, 11 }, { 1, 2, 8 }, { 7, 8, 7 }, { 7, 6, 1 },
+				{ 2, 8, 2 }, { 8, 6, 6 }, { 2, 3, 7 }, { 6, 5, 2 }, { 2, 5, 4 },
+				{ 3, 4, 9 }, { 5, 4, 10 }, { 3, 5, 14 }, };
+		const tipo_dato DISTANCIAS_FINALES[NUM_VERTICES] = { 0, 4, 12, 19, 21,
+				11, 9, 8, 14 };
+
+		int resultado = 0;
+
+		char buffer[MAX_TAM_CADENA] = { '\0' };
+
+		tipo_dato distancias_minimas_calculadas[NUM_VERTICES] = { 0 };
+
+		caca_log_debug("yo no olvido al año viejo");
+
+		dijkstra_main((void *)VERTICES, 14, 0, 0, distancias_minimas_calculadas, NULL);
+
+		resultado = !memcmp(DISTANCIAS_FINALES, distancias_minimas_calculadas,
+				NUM_VERTICES);
+
+		zlog_fini();
+
+		ck_assert_msg(resultado, "las distancias minimas %s",
+				arreglo_a_cadena(distancias_minimas_calculadas, NUM_VERTICES,
+						buffer));
+	}END_TEST
+
 Suite *
 cacacomun_suite(void) {
 
@@ -526,6 +558,7 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_borrar_arbol_avl_ref_dir);
 	tcase_add_test(tc_core, test_dijkstra_modificar_valor_nodo);
 	tcase_add_test(tc_core, test_cola_prioridad_pop);
+	tcase_add_test(tc_core, test_dijkstra);
 
 	suite_add_tcase(s, tc_core);
 
