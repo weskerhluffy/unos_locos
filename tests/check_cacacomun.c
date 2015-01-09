@@ -429,10 +429,9 @@ START_TEST( test_dijkstra_modificar_valor_nodo) {
 				(*(referencias_directas + i))->valor);
 	}
 
-	 resultado = num_datos_colectados == 9
-	 && !memcmp(VALORES_FINALES_INORDER, valores_preorder_resultado, 9)
-	 && (*(referencias_directas + 5 ))->valor == 4;
-
+	resultado = num_datos_colectados == 9
+			&& !memcmp(VALORES_FINALES_INORDER, valores_preorder_resultado, 9)
+			&& (*(referencias_directas + 5))->valor == 4;
 
 	caca_log_debug("La secuencia final es:");
 	arbol_binario_recorrido_inoder(ctx.raiz);
@@ -504,20 +503,29 @@ START_TEST( test_dijkstra) {
 			{ 5, 4, 10 }, { 3, 5, 14 }, };
 	const tipo_dato DISTANCIAS_FINALES[NUM_VERTICES] = { 0, 4, 12, 19, 21, 11,
 			9, 8, 14 };
+	const tipo_dato ANTECESORES[NUM_VERTICES] = { 0, 0, 1, 2, 5, 6, 7, 0, 2 };
 
 	int resultado = 0;
 
 	char buffer[MAX_TAM_CADENA] = { '\0' };
 
 	tipo_dato distancias_minimas_calculadas[NUM_VERTICES] = { 0 };
+	tipo_dato antecesores[NUM_VERTICES] = { 0 };
 
 	caca_log_debug("yo no olvido al año viejo");
 
-	dijkstra_main((void *) VERTICES, 14, 0, 0, distancias_minimas_calculadas,
-			NULL );
+	dijkstra_main((void *) VERTICES, NUM_VERTICES, 0, 0,
+			distancias_minimas_calculadas, antecesores);
 
 	resultado = !memcmp(DISTANCIAS_FINALES, distancias_minimas_calculadas,
-			NUM_VERTICES);
+			NUM_VERTICES) && !memcmp(ANTECESORES, antecesores, NUM_VERTICES);
+
+	caca_log_debug("los antecesores kedaron: %s",
+			arreglo_a_cadena(antecesores, NUM_VERTICES, buffer));
+
+	for (int i = 1; i < NUM_VERTICES; i++) {
+		caca_log_debug("antecesor de %ld es %ld", i, *(antecesores + i - 1));
+	}
 
 	zlog_fini();
 
