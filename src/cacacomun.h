@@ -136,6 +136,12 @@ typedef enum BOOLEANOS {
 #define ARBOL_AVL_GET_INDICE(nodo) \
 	((nodo)?(nodo)->indice:-1)
 
+#define ARBOL_BINARIO_ACTUALIZAR_HIJO_IZQ(nodo,nuevo_hijo) \
+	((nodo)?(nodo)->hijo_izq=(nuevo_hijo):((void)0))
+
+#define ARBOL_BINARIO_ACTUALIZAR_HIJO_DER(nodo,nuevo_hijo) \
+	((nodo)?(nodo)->hijo_der=(nuevo_hijo):((void)0))
+
 // XXX: http://www.programiz.com/c-programming/c-enumeration
 #undef  ADDITEM
 #define ADDITEM( criterio_ordenacion, comentario) criterio_ordenacion

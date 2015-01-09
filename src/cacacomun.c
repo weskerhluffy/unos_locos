@@ -1177,7 +1177,11 @@ static inline int arbol_avl_diferencia_alturas_subarboles(
 	int diferencia_alturas = 0;
 	diferencia_alturas = ARBOL_AVL_GET_ALTURA(
 			nodo->hijo_izq) - ARBOL_AVL_GET_ALTURA(nodo->hijo_der);
-	caca_log_debug("La diferecnai resultao %d", diferencia_alturas);
+	caca_log_debug("La diferecnai entre %ld de %ld y %ld de %ld es resultao %d",
+			ARBOL_AVL_GET_ALTURA(nodo->hijo_izq),
+			ARBOL_AVL_GET_INDICE(nodo->hijo_izq),
+			ARBOL_AVL_GET_ALTURA(nodo->hijo_der),
+			ARBOL_AVL_GET_INDICE(nodo->hijo_der), diferencia_alturas);
 	if (considerar_balanceado_cargado_der) {
 		return diferencia_alturas < 0 - tolerancia ?
 				ARBOL_AVL_ALTURA_CARGADA_DER :
@@ -1406,6 +1410,18 @@ void arbol_avl_borrar(nodo_arbol_binario **raiz, tipo_dato valor_a_borrar) {
 							raiz_int->hijo_der);
 					raiz_int->valor = nodo_min->valor;
 					arbol_avl_borrar(&raiz_int->hijo_der, raiz_int->valor);
+
+					ARBOL_BINARIO_ACTUALIZAR_HIJO_IZQ(nodo_min,
+							raiz_int->hijo_izq);
+					ARBOL_BINARIO_ACTUALIZAR_HIJO_DER(nodo_min,
+							raiz_int->hijo_der);
+					ARBOL_BINARIO_ACTUALIZAR_PADRE(nodo_min, raiz_int->padre);
+					nodo_min->altura = ARBOL_AVL_GET_ALTURA(raiz_int);
+					ARBOL_BINARIO_ACTUALIZAR_PADRE(raiz_int->hijo_izq,
+							nodo_min);
+					ARBOL_BINARIO_ACTUALIZAR_PADRE(raiz_int->hijo_der,
+							nodo_min);
+					*raiz = nodo_min;
 				}
 			}
 		}
@@ -1475,31 +1491,33 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario **raiz,
 	}
 
 	if (!(nodo_a_borrar_padre = ARBOL_AVL_GET_PADRE(nodo_a_borrar))) {
+		nodo_a_borrar_padre = NULL;
+		nodo_a_borrar_ref = raiz;
+	} else {
+		caca_log_debug("Borrando nodo raiz");
+
+		caca_log_debug("Calculando referencia en arbolazo, padre %p",
+				nodo_a_borrar_padre);
+
+		nodo_a_borrar_ref =
+				nodo_a_borrar->valor < (nodo_a_borrar_padre)->valor ?
+						&nodo_a_borrar_padre->hijo_izq :
+				nodo_a_borrar->valor > (nodo_a_borrar_padre)->valor ?
+						&nodo_a_borrar_padre->hijo_der :
+				nodo_a_borrar->indice
+						== ARBOL_AVL_GET_INDICE(nodo_a_borrar_padre->hijo_izq) ?
+						&nodo_a_borrar_padre->hijo_izq :
+						&nodo_a_borrar_padre->hijo_der;
+
 		caca_log_debug(
-				"No se puede borrar x q no ay referencia a nodo padre para encontrar su lugar en el mundo");
-		return;
+				"la referencia del nodo a borrar %p, referencia de ijo izq %p, de ijo der %p",
+				nodo_a_borrar_ref, &nodo_a_borrar_padre->hijo_izq,
+				&nodo_a_borrar_padre->hijo_der);
+
+		caca_log_debug("borrando nodo %ld, indice %ld", nodo_a_borrar->valor,
+				nodo_a_borrar->indice);
+
 	}
-
-	caca_log_debug("Calculando referencia en arbolazo, padre %p",
-			nodo_a_borrar_padre);
-
-	nodo_a_borrar_ref =
-			nodo_a_borrar->valor < (nodo_a_borrar_padre)->valor ?
-					&nodo_a_borrar_padre->hijo_izq :
-			nodo_a_borrar->valor > (nodo_a_borrar_padre)->valor ?
-					&nodo_a_borrar_padre->hijo_der :
-			nodo_a_borrar->indice
-					== ARBOL_AVL_GET_INDICE(nodo_a_borrar_padre->hijo_izq) ?
-					&nodo_a_borrar_padre->hijo_izq :
-					&nodo_a_borrar_padre->hijo_der;
-
-	caca_log_debug(
-			"la referencia del nodo a borrar %p, referencia de ijo izq %p, de ijo der %p",
-			nodo_a_borrar_ref, &nodo_a_borrar_padre->hijo_izq,
-			&nodo_a_borrar_padre->hijo_der);
-
-	caca_log_debug("borrando nodo %ld, indice %ld", nodo_a_borrar->valor,
-			nodo_a_borrar->indice);
 
 	ancestro_actual = nodo_a_borrar->padre;
 	ancestro_actual_apuntador = &nodo_a_borrar->padre;
@@ -1509,34 +1527,45 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario **raiz,
 			ancestro_actual, ancestro_actual_apuntador,
 			*ancestro_actual_apuntador);
 
-	caca_log_debug("estado original de padre %p hijod izq %p hiijos der %p",
-			nodo_a_borrar_padre, nodo_a_borrar_padre->hijo_izq,
-			nodo_a_borrar_padre->hijo_der);
+	if (nodo_a_borrar_padre) {
+		caca_log_debug("estado original de padre %p hijod izq %p hiijos der %p",
+				nodo_a_borrar_padre, nodo_a_borrar_padre->hijo_izq,
+				nodo_a_borrar_padre->hijo_der);
+	}
 
 	if (!nodo_a_borrar->hijo_izq) {
 		caca_log_debug("Borrando directamente sin hijo izq");
-		if (nodo_a_borrar->hijo_der) {
-			nodo_a_borrar->hijo_der->padre = ancestro_actual;
-		}
+		ARBOL_BINARIO_ACTUALIZAR_PADRE(nodo_a_borrar->hijo_der,
+				ancestro_actual);
 		*nodo_a_borrar_ref = nodo_a_borrar->hijo_der;
-		caca_log_debug("asi kedo el ancestro %p hijod izq %p hiijos der %p",
-				nodo_a_borrar_padre, nodo_a_borrar_padre->hijo_izq,
-				nodo_a_borrar_padre->hijo_der);
+		if (nodo_a_borrar_padre) {
+			caca_log_debug("asi kedo el ancestro %p hijod izq %p hiijos der %p",
+					nodo_a_borrar_padre, nodo_a_borrar_padre->hijo_izq,
+					nodo_a_borrar_padre->hijo_der);
+		}
 	} else {
 		if (!nodo_a_borrar->hijo_der) {
 			caca_log_debug("Borrando directamente sin hijo der");
-			if (nodo_a_borrar->hijo_izq) {
-				nodo_a_borrar->hijo_izq->padre = ancestro_actual;
-			}
+			ARBOL_BINARIO_ACTUALIZAR_PADRE(nodo_a_borrar->hijo_izq,
+					ancestro_actual);
 			*nodo_a_borrar_ref = nodo_a_borrar->hijo_izq;
 		} else {
 			caca_log_debug("Borrando nodo intermedio");
 			nodo_min = arbol_binario_get_nodo_minimo_valor(
 					nodo_a_borrar->hijo_der);
-			nodo_a_borrar->valor = nodo_min->valor;
-			nodo_a_borrar->indice = nodo_min->indice;
+
 			arbol_avl_borrar_referencia_directa(raiz, nodo_min);
-			nodo_min->hijo_der = nodo_min->hijo_izq = NULL;
+			ARBOL_BINARIO_ACTUALIZAR_HIJO_IZQ(nodo_min,
+					nodo_a_borrar->hijo_izq);
+			ARBOL_BINARIO_ACTUALIZAR_HIJO_DER(nodo_min,
+					nodo_a_borrar->hijo_der);
+			ARBOL_BINARIO_ACTUALIZAR_PADRE(nodo_min, nodo_a_borrar->padre);
+			nodo_min->altura = ARBOL_AVL_GET_ALTURA(nodo_a_borrar);
+
+			ARBOL_BINARIO_ACTUALIZAR_PADRE(nodo_a_borrar->hijo_izq, nodo_min);
+			ARBOL_BINARIO_ACTUALIZAR_PADRE(nodo_a_borrar->hijo_der, nodo_min);
+
+			*nodo_a_borrar_ref = nodo_min;
 		}
 	}
 
@@ -1544,8 +1573,13 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario **raiz,
 			*ancestro_actual_apuntador);
 
 	do {
+		if (!ARBOL_AVL_GET_PADRE(nodo_a_borrar)) {
+			caca_log_debug("el q c intenta borrar es la raiz");
+			break;
+		}
 
-		caca_log_debug("En el ancestro %p", ancestro_actual);
+		caca_log_debug("En el ancestro %ld %p",
+				ARBOL_AVL_GET_INDICE(ancestro_actual), ancestro_actual);
 
 		if (ARBOL_AVL_GET_PADRE(ancestro_actual)) {
 			if (ARBOL_AVL_GET_VALOR(ancestro_actual)
@@ -1556,7 +1590,7 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario **raiz,
 			}
 		} else {
 			ancestro_actual_apuntador = raiz;
-		}
+		};
 
 		ARBOL_AVL_ACTUALIZAR_ALTURA(ancestro_actual);
 
@@ -1713,6 +1747,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 		tipo_dato *distancias_minimas, tipo_dato *antecesores) {
 
 	int contador = 0;
+	int num_nodos = 0;
 
 	tipo_dato indice_origen_actual = 0;
 	tipo_dato indice_destino_actual = 0;
@@ -1752,6 +1787,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 		GRAFO_AVANZAR_NODO(nodo_origen_actual, GRAFO_PRINCIPAL, falso);
 		contador++;
 	}
+	num_nodos = contador;
 
 	caca_log_debug("initializando cola de prioridad ");
 
@@ -1788,10 +1824,16 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 								+ indice_destino_actual))->valor);
 			}
 		}
-		if (contador > 40) {
-			exit(EXIT_FAILURE);
-		}
+		/*
+		 if (contador > 40) {
+		 exit(EXIT_FAILURE);
+		 }
+		 */
 		contador++;
+	}
+	for (int i = 0; i < num_nodos; i++) {
+		*(distancias_minimas + i) =
+				(*(cpctx.referencias_directas_por_indice + i))->valor;
 	}
 
 }
@@ -1930,7 +1972,7 @@ char *arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer) {
 	for (int i = 0; i < tam_arreglo; i++) {
 		characteres_escritos += sprintf(ap_buffer + characteres_escritos, "%ld",
 				*(arreglo + i));
-		if (i) {
+		if (i < tam_arreglo - 1) {
 			*(ap_buffer + characteres_escritos++) = ',';
 		}
 	}
@@ -1952,7 +1994,7 @@ void timestamp_caca(char *stime) {
 	localtime_r(&ltime, &result);
 	asctime_r(&result, stime);
 
-	*(stime + strlen(stime)-1) = ' ';
+	*(stime + strlen(stime) - 1) = ' ';
 
 	current_utc_time(&spec);
 	ms = round(spec.tv_nsec / 1.0e3); // Convert nanoseconds to milliseconds
