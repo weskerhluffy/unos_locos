@@ -15,6 +15,67 @@
 
 static int *resultado_assestment = NULL;
 
+START_TEST( test_lee_matrix) {
+
+	const char *nombre_archivo =
+			"/Users/ernesto/workspace/unos_locos/mierda.txt";
+	tipo_dato valor_esperado_0_0 = 1000000000000000;
+	tipo_dato valor_esperado_1_2 = 9007199254740992;
+	tipo_dato resultado_real_0_0 = 0;
+	tipo_dato resultado_real_1_2 = 0;
+	int filas_esperadas = 3;
+	int resulta_filas = 0;
+	tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT];
+
+	lee_matriz_int_archivo(nombre_archivo, matrix, &resulta_filas);
+	resultado_real_0_0 = matrix[0][0];
+	resultado_real_1_2 = matrix[1][2];
+
+	ck_assert_msg(
+			resultado_real_0_0 == valor_esperado_0_0
+					&& resultado_real_1_2 == valor_esperado_1_2
+					&& resulta_filas == filas_esperadas,
+			"Expecting %ld and %ld, got %ld and %ld", valor_esperado_0_0,
+			valor_esperado_1_2, resultado_real_0_0, resultado_real_1_2);
+}
+END_TEST
+
+START_TEST( test_lee_matrix_stdin) {
+
+	tipo_dato valor_esperado_0_0 = 1000000000000000;
+	tipo_dato valor_esperado_1_2 = 9007199254740992;
+	tipo_dato resultado_real_0_0 = 0;
+	tipo_dato resultado_real_1_2 = 0;
+	int filas_esperadas = 3;
+	int resulta_filas = 0;
+	tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT];
+	int ptyfd = 0;
+	int pid = 0;
+	const char *cagada =
+			"1000000000000000 10000000000000000\n2 12\n9007199254740992 9007199254740992\n";
+
+	//XXX: http://stackoverflow.com/questions/5740176/how-do-i-write-a-testing-function-for-another-function-that-uses-stdin-input
+	pid = forkpty(&ptyfd, 0, 0, 0);
+	if (pid < 0)
+		perror("forkpty"), exit(1);
+	if (!pid) {
+		lee_matriz_long_stdin(matrix, &resulta_filas);
+		resultado_real_0_0 = matrix[0][0];
+		resultado_real_1_2 = matrix[1][2];
+
+		ck_assert_msg(
+				resultado_real_0_0 == valor_esperado_0_0
+						&& resultado_real_1_2 == valor_esperado_1_2
+						&& resulta_filas == filas_esperadas,
+				"Expecting %ld and %ld, got %ld and %ld", valor_esperado_0_0,
+				valor_esperado_1_2, resultado_real_0_0, resultado_real_1_2);
+	} else {
+		write(ptyfd, cagada, strlen(cagada));
+	}
+
+}
+END_TEST
+
 START_TEST( test_init_grapho) {
 
 	const tipo_dato VALORES[3][3] = { { 1, 2, 3 }, { 2, 1, 330 }, { 3, 1, 50 } };
@@ -59,19 +120,17 @@ START_TEST( test_lee_matrix_long_stdin) {
 	zlog_category_t *c;
 	zlog_category_t *c_fork;
 
-	rc = zlog_init("/Users/ernesto/workspace/unos_locos/zlog.conf");
-	if (rc) {
-		printf("init failed\n");
-		exit(-1);
-	}
+	init_zlog("/Users/ernesto/workspace/unos_locos/zlog.conf");
 
 	c = zlog_get_category("my_cat");
 	c_fork = zlog_get_category("test_fork");
+	cacategoria = zlog_get_category("cacacomun");
 	if (!c) {
 		printf("get cat fail\n");
 		zlog_fini();
 		exit(-2);
 	}
+	zlog_inicializado = verdadero;
 
 	zlog_info(c, "fucccckkkk!!!!");
 
@@ -121,7 +180,8 @@ START_TEST( test_lee_matrix_long_stdin) {
 	*resultado_assestment = -1;
 
 	if (!pid) {
-		zlog_debug(c_fork, "leyendo cagada");
+		zlog_debug(c_fork, "leyendo cagada %p en pid %d con stack %p",
+				cacategoria, getpid(), sbrk(0));
 		lee_matrix_long_stdin(resultados_reales, &num_filas, num_columnas);
 
 		zlog_debug(c_fork, "antes d imprimir resultados reales");
@@ -543,9 +603,9 @@ cacacomun_suite(void) {
 	/* Core test case */
 	TCase *tc_core = tcase_create("Core");
 	tcase_set_timeout(tc_core, 600);
-//	tcase_add_test(tc_core, test_lee_matrix);
-//	tcase_add_test(tc_core, test_lee_matrix_stdin);
 //	tcase_add_test(tc_core, test_lee_matrix_long_stdin);
+	tcase_add_test(tc_core, test_lee_matrix);
+	tcase_add_test(tc_core, test_lee_matrix_stdin);
 	tcase_add_test(tc_core, test_apuntador_arreglo);
 	tcase_add_test(tc_core, test_apuntador_allocado);
 	tcase_add_test(tc_core, test_imprime_apuntador);
@@ -574,68 +634,3 @@ int main(void) {
 	srunner_free(sr);
 	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-/*
- START_TEST( test_lee_matrix)
- {
-
- const char *nombre_archivo =
- "/Users/ernesto/workspace/unos_locos/mierda.txt";
- tipo_dato valor_esperado_0_0 = 1000000000000000;
- tipo_dato valor_esperado_1_2 = 9007199254740992;
- tipo_dato resultado_real_0_0 = 0;
- tipo_dato resultado_real_1_2 = 0;
- int filas_esperadas = 3;
- int resulta_filas = 0;
- tipo_dato matrix[MAX_COLUMNAS][MAX_FILAS];
-
- lee_matriz_int_archivo(nombre_archivo, matrix, &resulta_filas);
- resultado_real_0_0 = matrix[0][0];
- resultado_real_1_2 = matrix[1][2];
-
- ck_assert_msg(
- resultado_real_0_0 == valor_esperado_0_0
- && resultado_real_1_2 == valor_esperado_1_2
- && resulta_filas == filas_esperadas,
- "Expecting %ld and %ld, got %ld and %ld", valor_esperado_0_0,
- valor_esperado_1_2, resultado_real_0_0, resultado_real_1_2);
- }END_TEST
-
- START_TEST( test_lee_matrix_stdin)
- {
-
- tipo_dato valor_esperado_0_0 = 1000000000000000;
- tipo_dato valor_esperado_1_2 = 9007199254740992;
- tipo_dato resultado_real_0_0 = 0;
- tipo_dato resultado_real_1_2 = 0;
- int filas_esperadas = 3;
- int resulta_filas = 0;
- tipo_dato matrix[MAX_COLUMNAS][MAX_FILAS];
- int ptyfd = 0;
- int pid = 0;
- const char *cagada =
- "1000000000000000 10000000000000000\n2 12\n9007199254740992 9007199254740992\n";
-
- //XXX: http://stackoverflow.com/questions/5740176/how-do-i-write-a-testing-function-for-another-function-that-uses-stdin-input
- pid = forkpty(&ptyfd, 0, 0, 0);
- if (pid < 0)
- perror("forkpty"), exit(1);
- if (!pid) {
- lee_matriz_long_stdin(matrix, &resulta_filas);
- resultado_real_0_0 = matrix[0][0];
- resultado_real_1_2 = matrix[1][2];
-
- ck_assert_msg(
- resultado_real_0_0 == valor_esperado_0_0
- && resultado_real_1_2 == valor_esperado_1_2
- && resulta_filas == filas_esperadas,
- "Expecting %ld and %ld, got %ld and %ld",
- valor_esperado_0_0, valor_esperado_1_2, resultado_real_0_0,
- resultado_real_1_2);
- } else {
- write(ptyfd, cagada, strlen(cagada));
- }
-
- }END_TEST
-
- */

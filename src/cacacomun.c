@@ -130,9 +130,11 @@ int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 
 	caca_log_debug("Me corto los webos");
 
-	caca_log_debug("pero q mierda void pointer %p", matrix);
+	caca_log_debug("pero q mierda void pointer %p %p", matrix, sbrk(0));
 
 	es_array = !from_stack(matrix);
+
+	caca_log_debug("determinado q es array %d", es_array);
 
 	if (!num_columnas && !num_columnas_fijo) {
 		caca_log_debug("No mames no ay nada con q trabajar");
@@ -141,15 +143,20 @@ int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 	num_columnas_actual = num_columnas_fijo ? num_columnas_fijo : 0;
 
 	for (i = 0; i < num_filas; i++) {
+		caca_log_debug("En la fila %d de %d", i, num_filas);
 		if (num_columnas) {
 			num_columnas_actual = *(num_columnas + i);
 		}
 		for (j = 0; j < num_columnas_actual; j++) {
+			caca_log_debug("En la columna %d de %d", j, num_columnas_actual);
 			if (es_array) {
+				caca_log_debug("copiando array");
 				numero_actual = *(matrix_array + i * num_columnas_actual + j);
 			} else {
+				caca_log_debug("copiando apuntadores bidimensional");
 				numero_actual = *(*(matrix_pointer + i) + j);
 			}
+			caca_log_debug("copiado numero");
 			if (numero_actual) {
 				caca_log_debug("en %d %d el num %ld", i, j, numero_actual);
 			}
@@ -714,8 +721,11 @@ void caca_log_debug_func(const char *format, ...) {
 	strcat(formato, format);
 //	printf("el formato kedo %s",formato);
 
-	if (!cacategoria) {
+	if (!zlog_inicializado) {
 		init_zlog("/Users/ernesto/workspace/unos_locos/zlog.conf");
+	}
+
+	if (!cacategoria) {
 		INIT_ZLOG_CATEGORY(cacategoria, "cacacomun");
 	}
 
@@ -734,6 +744,7 @@ void init_zlog(const char *arch_conf) {
 		printf("init failed\n");
 		exit(-1);
 	}
+	zlog_inicializado = verdadero;
 }
 
 static inline char *grafo_nodo_a_cadena(nodo *node, char *cadena_buffer,

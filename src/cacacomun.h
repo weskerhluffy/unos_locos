@@ -209,6 +209,7 @@ typedef struct cola_prioridad_contexto {
 typedef nodo_arbol_binario nodo_cola_prioridad;
 
 zlog_category_t *cacategoria = NULL;
+bool zlog_inicializado = falso;
 
 #undef ADDITEM
 #define ADDITEM( criterio_ordenacion, comentario) [criterio_ordenacion]=comentario
