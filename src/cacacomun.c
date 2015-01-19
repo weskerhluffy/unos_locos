@@ -2044,12 +2044,18 @@ void grafo_copia_profunda(const grafo_contexto *ctx_origen,
 
 	nodo_origen_principal_actual = ctx_origen->inicio;
 	while (nodo_origen_principal_actual) {
+		caca_log_debug("lopp de principales");
+				caca_log_debug("procesando %ld",
+						nodo_origen_principal_actual->indice);
 		if (indices_a_ignorar
 				&& caca_arreglo_contiene(indices_a_ignorar,
 						tam_indices_a_ignorar,
 						nodo_origen_principal_actual->indice)) {
+			caca_log_debug("ignorando algo en principales");
 			caca_log_debug("ignorando prinipal %ld x esta n lista de ignorar",
-					nodo_origen_ordenado_actual->indice);
+					nodo_origen_principal_actual->indice);
+			nodo_origen_principal_actual =
+					nodo_origen_principal_actual->siguiente;
 			continue;
 		}
 		nodo_destino_principal_actual = grafo_nodo_alloc(ctx_destino, 1);
@@ -2078,6 +2084,9 @@ void grafo_copia_profunda(const grafo_contexto *ctx_origen,
 			nodo_origen_ordenado_actual = nodo_origen_principal_actual;
 			GRAFO_AVANZAR_NODO(nodo_origen_ordenado_actual, i, verdadero);
 			while (nodo_origen_ordenado_actual) {
+				caca_log_debug("lopp de adjacentes");
+				caca_log_debug("procesando %ld",
+						nodo_origen_ordenado_actual->indice);
 				if (indices_a_ignorar
 						&& caca_arreglo_contiene(indices_a_ignorar,
 								tam_indices_a_ignorar,
@@ -2085,6 +2094,8 @@ void grafo_copia_profunda(const grafo_contexto *ctx_origen,
 					caca_log_debug(
 							"ignorando adjacente %ld x esta n lista de ignorar",
 							nodo_origen_ordenado_actual->indice);
+					GRAFO_AVANZAR_NODO(nodo_origen_ordenado_actual, i,
+							verdadero);
 					continue;
 				}
 				nodo_destino_ordenado_actual = grafo_nodo_alloc(ctx_destino, 1);
@@ -2134,6 +2145,7 @@ static inline void grafo_copia_nodo(const nodo *nodo_origen, nodo *nodo_destino)
 static inline bool caca_arreglo_contiene(tipo_dato *arreglo, int tam_arreglo,
 		tipo_dato valor_buscado) {
 	for (int i = 0; i < tam_arreglo; i++) {
+		caca_log_debug("estoy en %d", i);
 		if (*(arreglo + i) == valor_buscado) {
 			return verdadero;
 		}
