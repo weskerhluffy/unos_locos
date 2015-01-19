@@ -106,7 +106,6 @@ START_TEST( test_lee_matrix_long_stdin) {
 	int caracteres_escritos = 0;
 	int num_filas = 0;
 	int num_filas_esperado = 0;
-	int rc = 0;
 	int i = 0, j = 0;
 	int nums_escritos = 0;
 	tipo_dato numero_actual = 0;
@@ -185,7 +184,7 @@ START_TEST( test_lee_matrix_long_stdin) {
 		lee_matrix_long_stdin(resultados_reales, &num_filas, num_columnas);
 
 		zlog_debug(c_fork, "antes d imprimir resultados reales");
-		imprime_matrix(resultados_reales, num_filas, num_columnas, 0);
+		caca_imprime_matrix(resultados_reales, num_filas, num_columnas, 0);
 		zlog_debug(c_fork, "despues d imprimir resultados reales");
 
 		*resultado_assestment = !memcmp(resultados_reales, VALORES_ESPERADOS, 9)
@@ -276,7 +275,7 @@ START_TEST( test_imprime_apuntador) {
 
 	zlog_fini();
 
-	ck_assert_msg(!imprime_matrix(valores, 3, NULL, 10),
+	ck_assert_msg(!caca_imprime_matrix(valores, 3, NULL, 10),
 			"El valor %p no se pudo imprimir como arreglo", valores);
 }
 END_TEST
@@ -291,7 +290,7 @@ START_TEST( test_imprime_array) {
 
 	zlog_fini();
 
-	ck_assert_msg(!imprime_matrix(ptr, 3, NULL, 3),
+	ck_assert_msg(!caca_imprime_matrix(ptr, 3, NULL, 3),
 			"El valor %p no es apuntador valido", ptr);
 }
 END_TEST
@@ -581,7 +580,7 @@ START_TEST( test_dijkstra) {
 			NUM_VERTICES) && !memcmp(ANTECESORES, antecesores, NUM_VERTICES);
 
 	caca_log_debug("los antecesores kedaron: %s",
-			arreglo_a_cadena(antecesores, NUM_VERTICES, buffer));
+			caca_arreglo_a_cadena(antecesores, NUM_VERTICES, buffer));
 
 	for (int i = 1; i < NUM_VERTICES; i++) {
 		caca_log_debug("antecesor de %ld es %ld", i, *(antecesores + i - 1));
@@ -590,9 +589,120 @@ START_TEST( test_dijkstra) {
 	zlog_fini();
 
 	ck_assert_msg(resultado, "las distancias minimas %s",
-			arreglo_a_cadena(distancias_minimas_calculadas, NUM_VERTICES,
+			caca_arreglo_a_cadena(distancias_minimas_calculadas, NUM_VERTICES,
 					buffer));
 }
+
+END_TEST
+
+START_TEST( test_grafo_copia_profunda) {
+
+	const tipo_dato VALORES[12][3] =
+			{ { 1, 2, 66 }, { 2, 8, 330 }, { 3, 1, 50 }, { 1, 4, 3 },
+					{ 4, 2, 8 }, { 2, 9, 74 }, { 1, 5, 90 }, { 1, 6, 12 }, { 1,
+							7, 83 }, { 8, 3, 45 }, { 8, 5, 5 }, { 5, 7, 53 } };
+
+	const tipo_dato VALORES_ESPERADOS[18][8] = {
+
+	{ 1, 2, 3, 4, 5, 6, 7 },
+
+	{ 1, 4, 6, 3, 2, 7, 5 },
+
+	{ 2, 1, 4, 8, 9 },
+
+	{ 2, 4, 1, 9, 8 },
+
+	{ 3, 1, 8 },
+
+	{ 3, 8, 1 },
+
+	{ 4, 1, 2 },
+
+	{ 4, 1, 2 },
+
+	{ 5, 1, 7, 8 },
+
+	{ 5, 8, 7, 1 },
+
+	{ 6, 1 },
+
+	{ 6, 1 },
+
+	{ 7, 1, 5 },
+
+	{ 7, 5, 1 },
+
+	{ 8, 2, 3, 5 },
+
+	{ 8, 5, 3, 2 },
+
+	{ 9, 2 },
+
+	{ 9, 2 }
+
+	};
+	/*
+	 * Coneectividad
+	 *
+	 * 1 8=====D 2 3 4 5 6 7
+	 * 2 8=====D 1 8 4 9
+	 * 3 8=====D 1 8
+	 * 4 8=====D 1 2
+	 * 5 8=====D 1 8 7
+	 * 6 8=====D 1
+	 * 7 8=====D 1 5
+	 * 8 8=====D 2 3 5
+	 * 9 8=====D 2
+	 */
+
+	char buffer[MAX_TAM_CADENA];
+	tipo_dato **caca = NULL;
+	tipo_dato matrix_ordenada[18][8] = { { 0 } };
+
+	int filas = 12;
+	int resultado = 0;
+	grafo_contexto ctx_origen;
+	grafo_contexto ctx_destino;
+
+	resultado = init_grafo((void*) VALORES, filas, &ctx_origen, verdadero,
+			verdadero);
+
+	caca_log_debug("el grafo original antes de ser copiado");
+	imprimir_lista_adjacencia(ctx_origen.inicio);
+
+	grafo_copia_profunda(&ctx_origen, &ctx_destino, NULL, 0);
+
+	caca = malloc(8 * sizeof(tipo_dato *));
+	*caca = malloc(18 * sizeof(tipo_dato));
+	from_stack(caca);
+	from_stack(matrix_ordenada);
+
+	caca_log_debug("el grafo original");
+	imprimir_lista_adjacencia(ctx_origen.inicio);
+	caca_log_debug("la copia");
+	imprimir_lista_adjacencia(ctx_destino.inicio);
+	grafo_get_representacion_en_matriz_ordenada(&ctx_destino, matrix_ordenada,
+			8);
+
+	caca_log_debug("alojaaaaa");
+	resultado = !memcmp(matrix_ordenada, VALORES_ESPERADOS,
+			sizeof(VALORES_ESPERADOS));
+//	caca_imprime_matrix(VALORES_ESPERADOS, 18, NULL, 8);
+	caca_log_debug("la matrix como arreglo %s, de tama %d",
+			caca_arreglo_a_cadena((tipo_dato *)VALORES_ESPERADOS, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
+			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
+	caca_log_debug("mierdaaaa");
+//	caca_imprime_matrix(matrix_ordenada, 18, NULL, 8);
+	caca_log_debug("la matrix copiada como arreglo %s, de tama %d",
+			caca_arreglo_a_cadena((tipo_dato *)matrix_ordenada, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
+			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
+
+	zlog_fini();
+
+	ck_assert_msg(resultado, "todo en orden %p", resultado);
+
+}
+
 END_TEST
 
 Suite *
@@ -619,6 +729,7 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_dijkstra_modificar_valor_nodo);
 	tcase_add_test(tc_core, test_cola_prioridad_pop);
 	tcase_add_test(tc_core, test_dijkstra);
+	tcase_add_test(tc_core, test_grafo_copia_profunda);
 
 	suite_add_tcase(s, tc_core);
 

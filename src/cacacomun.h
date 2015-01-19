@@ -106,6 +106,67 @@ typedef enum BOOLEANOS {
 			break; \
 		}
 
+#define GRAFO_ASIGNAR_SIGUIENTE_ANTERIOR(nodo_anterior,nodo_siguiente,nodo_actual,criterio_busqueda) \
+		switch (criterio_busqueda) { \
+	 	case GRAFO_VALOR: \
+			(nodo_actual)->siguiente_valor=nodo_siguiente; \
+			(nodo_actual)->anterior_valor=nodo_anterior; \
+			break; \
+		case GRAFO_DISTANCIA: \
+			(nodo_actual)->siguiente_distancia=nodo_siguiente; \
+			(nodo_actual)->anterior_distancia=nodo_anterior; \
+			break; \
+		case GRAFO_INDICE: \
+			(nodo_actual)->siguiente_indice=nodo_siguiente; \
+			(nodo_actual)->anterior_indice=nodo_anterior; \
+			break; \
+		case GRAFO_PRINCIPAL: \
+			(nodo_actual)->siguiente=nodo_siguiente; \
+			(nodo_actual)->anterior=nodo_anterior; \
+			break; \
+		default: \
+			perror("en GRAFO_ASIGNAR hubo un error culero al buscar"); \
+			break; \
+		}
+
+#define GRAFO_ASIGNAR_SIGUIENTE(nodo_siguiente,nodo_actual,criterio_busqueda) \
+		switch (criterio_busqueda) { \
+	 	case GRAFO_VALOR: \
+			(nodo_actual)->siguiente_valor=nodo_siguiente; \
+			break; \
+		case GRAFO_DISTANCIA: \
+			(nodo_actual)->siguiente_distancia=nodo_siguiente; \
+			break; \
+		case GRAFO_INDICE: \
+			(nodo_actual)->siguiente_indice=nodo_siguiente; \
+			break; \
+		case GRAFO_PRINCIPAL: \
+			(nodo_actual)->siguiente=nodo_siguiente; \
+			break; \
+		default: \
+			perror("en GRAFO_ASIGNAR hubo un error culero al buscar"); \
+			break; \
+		}
+
+#define GRAFO_ASIGNAR_ANTERIOR(nodo_anterior,nodo_actual,criterio_busqueda) \
+		switch (criterio_busqueda) { \
+	 	case GRAFO_VALOR: \
+			(nodo_actual)->anterior_valor=nodo_anterior; \
+			break; \
+		case GRAFO_DISTANCIA: \
+			(nodo_actual)->anterior_distancia=nodo_anterior; \
+			break; \
+		case GRAFO_INDICE: \
+			(nodo_actual)->anterior_indice=nodo_anterior; \
+			break; \
+		case GRAFO_PRINCIPAL: \
+			(nodo_actual)->anterior=nodo_anterior; \
+			break; \
+		default: \
+			perror("en GRAFO_ASIGNAR hubo un error culero al buscar"); \
+			break; \
+		}
+
 #define caca_log_debug(formato, args...) \
 		do \
 		{ \
@@ -234,7 +295,7 @@ int lee_matriz_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 int lee_matrix_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 		int *num_filas, int *num_columnas);
 
-int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
+int caca_imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 		int num_columnas_fijo);
 
 int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
@@ -361,10 +422,22 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
 		tipo_dato *distancias_minimas, tipo_dato *antecesores);
 
-char *arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer);
+char *caca_arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer);
 
 void timestamp_caca(char *stime);
 
 void current_utc_time(struct timespec *ts);
+
+static inline void grafo_copia_nodo(const nodo *nodo_origen, nodo *nodo_destino);
+
+static inline bool caca_arreglo_contiene(tipo_dato *arreglo, int tam_arreglo,
+		tipo_dato valor_buscado);
+
+void grafo_get_representacion_en_matriz_ordenada(grafo_contexto *ctx,
+		void *matrix, int num_columnas);
+
+void grafo_copia_profunda(const grafo_contexto *ctx_origen,
+		grafo_contexto *ctx_destino, tipo_dato *indices_a_ignorar,
+		int tam_indices_a_ignorar) ;
 
 #endif /* CACACOMUN_H_ */

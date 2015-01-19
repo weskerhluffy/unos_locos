@@ -7,7 +7,6 @@ AM_CFLAGS = -Wall -g -I$(ZLOG_DIR)/include
 lib_LTLIBRARIES = libunoslocos.la libcacacomun.la
 libunoslocos_la_SOURCES = unoslocos.c unoslocos.h
 libcacacomun_la_SOURCES = cacacomun.c cacacomun.h
-#cacacomun_LIBADD= -L$(ZLOG_DIR)/lib -lzlog -lpthread
 
 bin_PROGRAMS = main
 main_SOURCES = main.c

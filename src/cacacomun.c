@@ -116,7 +116,7 @@ int lee_matrix_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 	return 0;
 }
 
-int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
+int caca_imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 		int num_columnas_fijo) {
 	bool es_array = falso;
 	int i = 0, j = 0;
@@ -132,7 +132,8 @@ int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 
 	caca_log_debug("pero q mierda void pointer %p %p", matrix, sbrk(0));
 
-	es_array = !from_stack(matrix);
+//	es_array = !from_stack(matrix);
+	es_array = verdadero;
 
 	caca_log_debug("determinado q es array %d", es_array);
 
@@ -143,20 +144,20 @@ int imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 	num_columnas_actual = num_columnas_fijo ? num_columnas_fijo : 0;
 
 	for (i = 0; i < num_filas; i++) {
-		caca_log_debug("En la fila %d de %d", i, num_filas);
+//		caca_log_debug("En la fila %d de %d", i, num_filas);
 		if (num_columnas) {
 			num_columnas_actual = *(num_columnas + i);
 		}
 		for (j = 0; j < num_columnas_actual; j++) {
-			caca_log_debug("En la columna %d de %d", j, num_columnas_actual);
+			//		caca_log_debug("En la columna %d de %d", j, num_columnas_actual);
 			if (es_array) {
-				caca_log_debug("copiando array");
+//				caca_log_debug("copiando array");
 				numero_actual = *(matrix_array + i * num_columnas_actual + j);
 			} else {
 				caca_log_debug("copiando apuntadores bidimensional");
 				numero_actual = *(*(matrix_pointer + i) + j);
 			}
-			caca_log_debug("copiado numero");
+//			caca_log_debug("copiado numero");
 			if (numero_actual) {
 				caca_log_debug("en %d %d el num %ld", i, j, numero_actual);
 			}
@@ -204,7 +205,7 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 
 	caca_log_debug("despues de inicializar contexto %s", "mierdadsdsadsa");
 
-	imprime_matrix(matrix, num_filas, NULL, 3);
+	caca_imprime_matrix(matrix, num_filas, NULL, 3);
 
 	for (i = 0; i < num_filas; i++) {
 		indice_nodo_origen_actual = *(*(matrix_int + i) + GRAFO_NODO_ORIGEN);
@@ -773,6 +774,7 @@ int apuntador_valido(void *p) {
 }
 
 bool from_stack(void *ptr) {
+	caca_log_debug("comparando %p con %p", ptr, sbrk(0));
 	return ptr > sbrk(0);
 }
 
@@ -1974,7 +1976,7 @@ tipo_dato grafo_get_distancia_entre_nodos_por_indice(grafo_contexto *ctx,
 	return distancia;
 }
 
-char *arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer) {
+char *caca_arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer) {
 	char *ap_buffer = NULL;
 	int characteres_escritos = 0;
 
@@ -2027,4 +2029,203 @@ void current_utc_time(struct timespec *ts) {
 	clock_gettime(CLOCK_REALTIME, ts);
 #endif
 
+}
+
+void grafo_copia_profunda(const grafo_contexto *ctx_origen,
+		grafo_contexto *ctx_destino, tipo_dato *indices_a_ignorar,
+		int tam_indices_a_ignorar) {
+
+	nodo *nodo_origen_principal_actual = NULL;
+	nodo *nodo_origen_ordenado_actual = NULL;
+	nodo *nodo_destino_principal_actual = NULL;
+	nodo *nodo_destino_principal_previo = NULL;
+	nodo *nodo_destino_ordenado_actual = NULL;
+	nodo *nodo_destino_ordenado_previo = NULL;
+
+	nodo_origen_principal_actual = ctx_origen->inicio;
+	while (nodo_origen_principal_actual) {
+		if (indices_a_ignorar
+				&& caca_arreglo_contiene(indices_a_ignorar,
+						tam_indices_a_ignorar,
+						nodo_origen_principal_actual->indice)) {
+			caca_log_debug("ignorando prinipal %ld x esta n lista de ignorar",
+					nodo_origen_ordenado_actual->indice);
+			continue;
+		}
+		nodo_destino_principal_actual = grafo_nodo_alloc(ctx_destino, 1);
+		memset(nodo_destino_principal_actual, sizeof(nodo), 0);
+		grafo_copia_nodo(nodo_origen_principal_actual,
+				nodo_destino_principal_actual);
+		if (nodo_destino_principal_previo) {
+			nodo_destino_principal_previo->siguiente =
+					nodo_destino_principal_actual;
+			nodo_destino_principal_actual->anterior =
+					nodo_destino_principal_previo;
+		} else {
+			ctx_destino->inicio = nodo_destino_principal_actual;
+		}
+		nodo_destino_principal_previo = nodo_destino_principal_actual;
+
+		caca_log_debug("copiado nodo principal %ld %ld",
+				nodo_destino_principal_actual->indice,
+				nodo_destino_principal_actual->distancia);
+
+		for (GRAFO_CRITERIOS_ORDENACION i = GRAFO_INDICE; i < GRAFO_PRINCIPAL;
+				i++) {
+			caca_log_debug("copiando nodos ordenados por %s",
+					GRAFO_NOMBRES_CRITERIOS_ORDENACION[i]);
+			nodo_destino_ordenado_previo = NULL;
+			nodo_origen_ordenado_actual = nodo_origen_principal_actual;
+			GRAFO_AVANZAR_NODO(nodo_origen_ordenado_actual, i, verdadero);
+			while (nodo_origen_ordenado_actual) {
+				if (indices_a_ignorar
+						&& caca_arreglo_contiene(indices_a_ignorar,
+								tam_indices_a_ignorar,
+								nodo_origen_ordenado_actual->indice)) {
+					caca_log_debug(
+							"ignorando adjacente %ld x esta n lista de ignorar",
+							nodo_origen_ordenado_actual->indice);
+					continue;
+				}
+				nodo_destino_ordenado_actual = grafo_nodo_alloc(ctx_destino, 1);
+				memset(nodo_destino_ordenado_actual, sizeof(nodo), 0);
+				grafo_copia_nodo(nodo_origen_ordenado_actual,
+						nodo_destino_ordenado_actual);
+				if (nodo_destino_ordenado_previo) {
+					GRAFO_ASIGNAR_ANTERIOR(nodo_destino_ordenado_previo,
+							nodo_destino_ordenado_actual, i);
+					GRAFO_ASIGNAR_SIGUIENTE(nodo_destino_ordenado_actual,
+							nodo_destino_ordenado_previo, i);
+				} else {
+					GRAFO_ASIGNAR_SIGUIENTE(nodo_destino_ordenado_actual,
+							nodo_destino_principal_actual, i);
+					GRAFO_ASIGNAR_ANTERIOR(nodo_destino_principal_actual,
+							nodo_destino_ordenado_actual, i);
+					caca_log_debug("asignando 1ero de lista ordenada");
+				}
+				caca_log_debug("copiado nodo adjacente  %ld %ld",
+						nodo_destino_ordenado_actual->indice,
+						nodo_destino_ordenado_actual->distancia);
+				caca_log_debug("de original %ld %ld",
+						nodo_origen_ordenado_actual->indice,
+						nodo_origen_ordenado_actual->distancia);
+
+				GRAFO_AVANZAR_NODO(nodo_origen_ordenado_actual, i, verdadero);
+				nodo_destino_ordenado_previo = nodo_destino_ordenado_actual;
+			}
+		}
+
+		nodo_origen_principal_actual = nodo_origen_principal_actual->siguiente;
+	}
+
+}
+
+#define GRAFO_COPIA_PROPIEDAD(propiedad) nodo_destino->propiedad = nodo_origen->propiedad
+static inline void grafo_copia_nodo(const nodo *nodo_origen, nodo *nodo_destino) {
+	GRAFO_COPIA_PROPIEDAD(distancia);
+	GRAFO_COPIA_PROPIEDAD(indice);
+	GRAFO_COPIA_PROPIEDAD(num_nodos_asociados);
+	GRAFO_COPIA_PROPIEDAD(num_nodos_asociados_distancia);
+	GRAFO_COPIA_PROPIEDAD(num_nodos_asociados_indice);
+	GRAFO_COPIA_PROPIEDAD(num_nodos_asociados_valor);
+	GRAFO_COPIA_PROPIEDAD(valor);
+}
+
+static inline bool caca_arreglo_contiene(tipo_dato *arreglo, int tam_arreglo,
+		tipo_dato valor_buscado) {
+	for (int i = 0; i < tam_arreglo; i++) {
+		if (*(arreglo + i) == valor_buscado) {
+			return verdadero;
+		}
+	}
+	return falso;
+}
+
+#define GRAFO_GET_APUNTADOR_POSICION_MATRIX(apuntador_destino,posicion_filas,posicion_columnas) \
+			if (es_array) { \
+				apuntador_destino= (matrix_array + posicion_filas * num_columnas + posicion_columnas); \
+			} else { \
+				apuntador_destino= (*(matrix_pointer + posicion_filas) + posicion_columnas); \
+			}
+void grafo_get_representacion_en_matriz_ordenada(grafo_contexto *ctx,
+		void *matrix, int num_columnas) {
+	bool es_array = falso;
+	int contador_filas = 0;
+	int contador_columnas = 0;
+	void **apuntador_matrix = NULL;
+	tipo_dato *matrix_array = NULL;
+	tipo_dato **matrix_pointer = NULL;
+	tipo_dato *apuntador_a_posicion_en_matrix = NULL;
+	nodo *nodo_actual = NULL;
+	nodo *nodo_adjacente_actual = NULL;
+
+	nodo_actual = ctx->inicio;
+	apuntador_matrix = matrix;
+	matrix_array = (tipo_dato *) apuntador_matrix;
+	matrix_pointer = (tipo_dato **) apuntador_matrix;
+
+//	es_array = !from_stack(matrix);
+	es_array = verdadero;
+
+	caca_log_debug("Transformando listas en matrix:");
+
+	while (nodo_actual) {
+		nodo_adjacente_actual = nodo_actual;
+		GRAFO_AVANZAR_NODO(nodo_adjacente_actual, GRAFO_INDICE, verdadero);
+		contador_columnas = 0;
+
+		GRAFO_GET_APUNTADOR_POSICION_MATRIX(apuntador_a_posicion_en_matrix,
+				contador_filas, contador_columnas);
+
+		caca_log_debug(
+				"el apuntador destino del nodo principal %p en %d %d, cuyo valor es %ld",
+				apuntador_a_posicion_en_matrix, contador_filas,
+				contador_columnas, nodo_actual->indice);
+
+		*apuntador_a_posicion_en_matrix = nodo_actual->indice;
+
+		contador_columnas++;
+
+		while (nodo_adjacente_actual) {
+
+			GRAFO_GET_APUNTADOR_POSICION_MATRIX(apuntador_a_posicion_en_matrix,
+					contador_filas, contador_columnas);
+
+			caca_log_debug("en adjacente indice %d %d", contador_filas,
+					contador_columnas);
+			*apuntador_a_posicion_en_matrix = nodo_adjacente_actual->indice;
+
+			GRAFO_AVANZAR_NODO(nodo_adjacente_actual, GRAFO_INDICE, verdadero);
+			contador_columnas++;
+		}
+
+		contador_filas++;
+		contador_columnas = 0;
+
+		GRAFO_GET_APUNTADOR_POSICION_MATRIX(apuntador_a_posicion_en_matrix,
+				contador_filas, contador_columnas);
+		*apuntador_a_posicion_en_matrix = nodo_actual->indice;
+
+		contador_columnas++;
+
+		nodo_adjacente_actual = nodo_actual;
+		GRAFO_AVANZAR_NODO(nodo_adjacente_actual, GRAFO_DISTANCIA, verdadero);
+		while (nodo_adjacente_actual) {
+			GRAFO_GET_APUNTADOR_POSICION_MATRIX(apuntador_a_posicion_en_matrix,
+					contador_filas, contador_columnas);
+
+			caca_log_debug("en adjacente distancia %d %d", contador_filas,
+					contador_columnas);
+			*apuntador_a_posicion_en_matrix = nodo_adjacente_actual->indice;
+
+			GRAFO_AVANZAR_NODO(nodo_adjacente_actual, GRAFO_DISTANCIA,
+					verdadero);
+			contador_columnas++;
+		}
+
+		nodo_actual = nodo_actual->siguiente;
+
+		contador_filas++;
+	}
+	caca_log_debug("termino representacion en matrix");
 }
