@@ -183,6 +183,7 @@ int caca_imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 		bool usar_hashes, bool relaciones_bidireccionales) {
 	int i = 0;
+	int contador_nodos=0;
 	GRAFO_TIPO_RESULTADO_BUSQUEDA tipo_resultado = GRAFO_NADA_ENCONTRADO;
 	tipo_dato distancia_actual = 0, indice_nodo_origen_actual = 0,
 			indice_nodo_destino_actual = 0;
@@ -247,6 +248,7 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 					GRAFO_INDICE) = -1;
 			*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
 					GRAFO_DISTANCIA) = -1;
+			contador_nodos++;
 			break;
 		case GRAFO_NADA_ENCONTRADO:
 			nodo_origen_actual = grafo_nodo_alloc(ctx, 1);
@@ -259,6 +261,7 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 			*grafo_apuntador_num_nodos_asociados(nodo_origen_actual,
 					GRAFO_DISTANCIA) = -1;
 			caca_log_debug("Se inicia la lista de nodos en ctx");
+			contador_nodos++;
 			break;
 		default:
 			perror("no se pudo configurar ctx d graph");
@@ -364,7 +367,7 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 
 	}
 
-	return (0);
+	return (contador_nodos);
 }
 
 nodo *grafo_nodo_alloc(grafo_contexto *ctx, int localidades_solicitadas) {
