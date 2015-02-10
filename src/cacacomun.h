@@ -8,6 +8,7 @@
 #include <zlog.h>
 #include <stdarg.h> /* for va_list */
 #include <unistd.h>
+#include <execinfo.h>
 
 #ifndef CACACOMUN_H_
 #define CACACOMUN_H_
@@ -24,7 +25,7 @@
 
 #define tipo_dato unsigned long
 
-#define MAX_NODOS 100000
+#define MAX_NODOS 100
 #define TAM_MAX_LINEA 1024
 #define TAM_MAX_NUMERO 128
 #define MAX_FILAS_INPUT 10000
@@ -34,7 +35,11 @@
 #define CACA_COMPARACION_IZQ_MENOR -1
 #define CACA_COMPARACION_IZQ_IGUAL 0
 #define CACA_COMPARACION_IZQ_MAYOR 1
-#define MAX_TAM_CADENA 1000
+#define MAX_TAM_CADENA 200
+#define ARBOL_AVL_INDICE_INVALIDO -1
+#define ARBOL_AVL_VALOR_INVALIDO -1
+#define COLA_PRIORIDAD_VALOR_INVALIDO -1
+#define DIJKSTRA_VALOR_INVALIDO -1
 
 #define MAX_VALOR (tipo_dato) (2<<28)
 
@@ -172,10 +177,14 @@ typedef enum BOOLEANOS {
 		{ \
 			size_t profundidad = 0; \
 			void *array[MAX_TAM_CADENA]; \
-			profundidad = backtrace(array, MAX_TAM_CADENA); \
+ 			profundidad = backtrace(array, MAX_TAM_CADENA); \
 			caca_log_debug_func(formato,__FILE__, __func__, __LINE__,profundidad,##args); \
 		} \
-		while(0)
+		while(0);
+
+/*
+ #define caca_log_debug(formato, args...) (void) 0
+ */
 
 #define ARBOL_AVL_ACTUALIZAR_ALTURA(nodo) \
 	(nodo)->altura = ((nodo)->hijo_izq || (nodo)->hijo_der)? \
@@ -186,7 +195,7 @@ typedef enum BOOLEANOS {
 	((nodo)?(nodo)->altura:0)
 
 #define ARBOL_AVL_GET_VALOR(nodo) \
-	((nodo)?(nodo)->valor:-1)
+	((nodo)?(nodo)->valor:ARBOL_AVL_VALOR_INVALIDO)
 
 #define ARBOL_BINARIO_ACTUALIZAR_PADRE(nodo,nuevo_padre) \
 	((nodo)?(nodo)->padre=(nuevo_padre):((void)0))
@@ -195,13 +204,19 @@ typedef enum BOOLEANOS {
 	((nodo)?(nodo)->padre:NULL)
 
 #define ARBOL_AVL_GET_INDICE(nodo) \
-	((nodo)?(nodo)->indice:-1)
+	((nodo)?(nodo)->indice:ARBOL_AVL_INDICE_INVALIDO)
 
 #define ARBOL_BINARIO_ACTUALIZAR_HIJO_IZQ(nodo,nuevo_hijo) \
 	((nodo)?(nodo)->hijo_izq=(nuevo_hijo):((void)0))
 
 #define ARBOL_BINARIO_ACTUALIZAR_HIJO_DER(nodo,nuevo_hijo) \
 	((nodo)?(nodo)->hijo_der=(nuevo_hijo):((void)0))
+
+#define COLA_PRIORIDAD_ASIGNA_INDICE(nodo,nuevo_indice) \
+	(nodo)->indice=nuevo_indice
+
+#define COLA_PRIORIDAD_ASIGNA_VALOR(nodo,nuevo_valor) \
+	(nodo)->indice=nuevo_valor
 
 // XXX: http://www.programiz.com/c-programming/c-enumeration
 #undef  ADDITEM
@@ -328,7 +343,7 @@ static inline int grafo_comparar_nodos(nodo *nodo1, nodo *nodo2,
 void caca_log_debug_func(const char *format, ...);
 
 // XXX: https://www.securecoding.cert.org/confluence/display/seccode/MEM10-C.+Define+and+use+a+pointer+validation+function
-int apuntador_valido(void *p);
+int caca_apuntador_valido(void *p);
 
 // XXX: http://www.quora.com/Given-a-variable-how-can-you-find-whether-it-was-allocated-from-stack-or-from-heap-memory
 bool from_stack(void *ptr);
@@ -438,6 +453,9 @@ void grafo_get_representacion_en_matriz_ordenada(grafo_contexto *ctx,
 
 void grafo_copia_profunda(const grafo_contexto *ctx_origen,
 		grafo_contexto *ctx_destino, tipo_dato *indices_a_ignorar,
-		int tam_indices_a_ignorar) ;
+		int tam_indices_a_ignorar);
+
+static inline void caca_inutiliza_nodo_cola_prioridad(
+		nodo_cola_prioridad *nodos, int num_nodos);
 
 #endif /* CACACOMUN_H_ */

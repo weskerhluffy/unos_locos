@@ -10,7 +10,8 @@ check_unoslocos_LDADD = $(top_builddir)/src/libcacacomun.la $(top_builddir)/src/
 
 check_cacacomun_SOURCES = check_cacacomun.c $(top_builddir)/src/cacacomun.h
 # XXX: http://stackoverflow.com/questions/20230827/how-to-set-include-paths-with-autotools
-check_cacacomun_CFLAGS = @CHECK_CFLAGS@ -g -I$(ZLOG_DIR)/include  -Wall
+check_cacacomun_CFLAGS = @CHECK_CFLAGS@ -g3 -O0 -I$(ZLOG_DIR)/include  -Wall
 # XXX: http://osiris.laya.com/coding/dylib_linking.html
 # XXX: http://stackoverflow.com/questions/17703510/dyld-library-not-loaded-reason-image-not-loaded
 check_cacacomun_LDADD = $(top_builddir)/src/libcacacomun.la @CHECK_LIBS@ -L$(ZLOG_DIR)/lib -lzlog -lpthread
+check_cacacomun_LDFLAGS= -Wl,-stack_size -Wl,4000000

@@ -90,7 +90,7 @@ START_TEST( test_init_grapho) {
 	imprimir_lista_adjacencia(ctx.inicio);
 	zlog_fini();
 
-	ck_assert_msg(!resultado, "todo en orden %s", resultado);
+	ck_assert_msg(resultado, "todo en orden %d", resultado);
 }
 END_TEST
 
@@ -323,7 +323,7 @@ START_TEST( test_init_grapho_busq_bin) {
 	imprimir_lista_adjacencia(ctx.inicio);
 	zlog_fini();
 
-	ck_assert_msg(!resultado, "todo en orden %s", resultado);
+	ck_assert_msg(resultado, "todo en orden %d", resultado);
 }
 END_TEST
 
@@ -421,7 +421,7 @@ START_TEST( test_borrar_arbol_avl_ref_dir) {
 	int resultado = 0;
 	arbol_binario_contexto ctx;
 	tipo_dato valores_preorder_resultado[8] = { 0 };
-	nodo_arbol_binario *referencias_directas[9] = { NULL };
+	nodo_arbol_binario *referencias_directas[10] = { NULL };
 
 	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9,
 			referencias_directas);
@@ -429,7 +429,10 @@ START_TEST( test_borrar_arbol_avl_ref_dir) {
 	caca_log_debug("La secuencia inicial es:");
 	arbol_binario_recorrido_inoder(ctx.raiz);
 
-	arbol_avl_borrar_referencia_directa(&ctx.raiz, *(referencias_directas + 6));
+	caca_log_debug("borrando nodo %ld",
+			ARBOL_AVL_GET_VALOR(*(referencias_directas + 7)));
+
+	arbol_avl_borrar_referencia_directa(&ctx.raiz, *(referencias_directas + 7));
 
 	arbol_binario_colectar_datos_recorrido_inoder(ctx.raiz,
 			valores_preorder_resultado, &resultado);
@@ -452,21 +455,21 @@ END_TEST
 START_TEST( test_dijkstra_modificar_valor_nodo) {
 
 	const tipo_dato VALORES[9] = { 9, 5, 10, 1, 6, 11, 0, 2, 3 };
-	const tipo_dato VALORES_FINALES_INORDER[9] = { 0, 1, 2, 3, 4, 5, 6, 9, 10 };
+	const tipo_dato VALORES_FINALES_INORDER[10] = { 0, 1, 2, 3, 4, 5, 6, 9, 10 };
 
 	int resultado = 0;
 	int num_datos_colectados = 0;
 	arbol_binario_contexto ctx;
 	cola_prioridad_contexto cpctx;
-	tipo_dato valores_preorder_resultado[9] = { 0 };
-	nodo_arbol_binario *referencias_directas[9] = { NULL };
+	tipo_dato valores_preorder_resultado[10] = { 0 };
+	nodo_arbol_binario *referencias_directas[11] = { NULL };
 
 	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9,
 			referencias_directas);
 
-	for (int i = 0; i < 9; i++) {
+	for (int i = 0; i < 11; i++) {
 		caca_log_debug("referencias directas indice %d  valor %ld", i,
-				(*(referencias_directas + i))->valor);
+				ARBOL_AVL_GET_VALOR(*(referencias_directas + i)));
 	}
 
 	caca_log_debug("La secuencia inicial es:");
@@ -475,22 +478,22 @@ START_TEST( test_dijkstra_modificar_valor_nodo) {
 	cola_prioridad_init(&cpctx, NULL, NULL, NULL, 0, &ctx,
 			referencias_directas);
 
-	cola_prioridad_modificar_valor_nodo(&cpctx, 5, 4);
+	cola_prioridad_modificar_valor_nodo(&cpctx, 6, 4);
 
 	arbol_binario_colectar_datos_recorrido_inoder(ctx.raiz,
 			valores_preorder_resultado, &num_datos_colectados);
 
-	for (int i = 0; i < 9; i++) {
+	for (int i = 0; i < 11; i++) {
 		caca_log_debug("eien pressure %d %ld", i,
 				*(valores_preorder_resultado + i));
 		caca_log_debug("referencias directas indice %ld, valor %ld",
-				(*(referencias_directas + i))->indice,
-				(*(referencias_directas + i))->valor);
+				ARBOL_AVL_GET_INDICE(*(referencias_directas + i)),
+				ARBOL_AVL_GET_VALOR(*(referencias_directas + i)));
 	}
 
 	resultado = num_datos_colectados == 9
 			&& !memcmp(VALORES_FINALES_INORDER, valores_preorder_resultado, 9)
-			&& (*(referencias_directas + 5))->valor == 4;
+			&& (*(referencias_directas + 6))->valor == 4;
 
 	caca_log_debug("La secuencia final es:");
 	arbol_binario_recorrido_inoder(ctx.raiz);
@@ -521,14 +524,13 @@ START_TEST( test_cola_prioridad_pop) {
 
 	caca_log_debug("empezando el año");
 
-	cola_prioridad_init(&ctx, NULL, (unsigned long *) VALORES, NULL,
-			NUM_VALORES, NULL, NULL );
+	cola_prioridad_init(&ctx, NULL, VALORES, NULL, NUM_VALORES, NULL, NULL );
 
 	referencias_directas = ctx.referencias_directas_por_indice;
 
-	for (int i = 0; i < NUM_VALORES; i++) {
+	for (int i = 0; i < NUM_VALORES + 1; i++) {
 		caca_log_debug("referencias directas indice %d  valor %ld", i,
-				(*(referencias_directas + i))->valor);
+				ARBOL_AVL_GET_VALOR(*(referencias_directas + i)));
 	}
 
 	nodo_pop_1 = cola_prioridad_pop(&ctx);
@@ -597,10 +599,33 @@ END_TEST
 
 START_TEST( test_grafo_copia_profunda) {
 
-	const tipo_dato VALORES[12][3] =
-			{ { 1, 2, 66 }, { 2, 8, 330 }, { 3, 1, 50 }, { 1, 4, 3 },
-					{ 4, 2, 8 }, { 2, 9, 74 }, { 1, 5, 90 }, { 1, 6, 12 }, { 1,
-							7, 83 }, { 8, 3, 45 }, { 8, 5, 5 }, { 5, 7, 53 } };
+	const tipo_dato VALORES[12][3] = {
+
+	{ 1, 2, 66 },
+
+	{ 2, 8, 330 },
+
+	{ 3, 1, 50 },
+
+	{ 1, 4, 3 },
+
+	{ 4, 2, 8 },
+
+	{ 2, 9, 74 },
+
+	{ 1, 5, 90 },
+
+	{ 1, 6, 12 },
+
+	{ 1, 7, 83 },
+
+	{ 8, 3, 45 },
+
+	{ 8, 5, 5 },
+
+	{ 5, 7, 53 }
+
+	};
 
 	const tipo_dato VALORES_ESPERADOS[18][8] = {
 
@@ -655,14 +680,15 @@ START_TEST( test_grafo_copia_profunda) {
 	 * 9 8=====D 2
 	 */
 
-	char buffer[MAX_TAM_CADENA];
-	tipo_dato **caca = NULL;
+	char *buffer = NULL;
 	tipo_dato matrix_ordenada[18][8] = { { 0 } };
 
 	int filas = 12;
 	int resultado = 0;
 	grafo_contexto ctx_origen;
 	grafo_contexto ctx_destino;
+
+	buffer = calloc(1000, sizeof(char));
 
 	resultado = init_grafo((void*) VALORES, filas, &ctx_origen, verdadero,
 			verdadero);
@@ -672,14 +698,9 @@ START_TEST( test_grafo_copia_profunda) {
 
 	grafo_copia_profunda(&ctx_origen, &ctx_destino, NULL, 0);
 
-	caca = malloc(8 * sizeof(tipo_dato *));
-	*caca = malloc(18 * sizeof(tipo_dato));
-	from_stack(caca);
-	from_stack(matrix_ordenada);
-
 	caca_log_debug("el grafo original");
 	imprimir_lista_adjacencia(ctx_origen.inicio);
-	caca_log_debug("la copia");
+	caca_log_debug("la copia, con inicio %p", ctx_destino.inicio);
 	imprimir_lista_adjacencia(ctx_destino.inicio);
 	grafo_get_representacion_en_matriz_ordenada(&ctx_destino, matrix_ordenada,
 			8);
@@ -697,19 +718,43 @@ START_TEST( test_grafo_copia_profunda) {
 			caca_arreglo_a_cadena((tipo_dato *)matrix_ordenada, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
 			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
 
-	zlog_fini();
+	caca_log_debug("termino esta mierda");
+//	zlog_fini();
 
-	ck_assert_msg(resultado, "todo en orden %p", resultado);
+	ck_assert_msg(resultado, "todo en orden %d", resultado);
 
 }
 END_TEST
 
 START_TEST( test_grafo_copia_profunda_lista_ignorar) {
 
-	const tipo_dato VALORES[12][3] =
-			{ { 1, 2, 66 }, { 2, 8, 330 }, { 3, 1, 50 }, { 1, 4, 3 },
-					{ 4, 2, 8 }, { 2, 9, 74 }, { 1, 5, 90 }, { 1, 6, 12 }, { 1,
-							7, 83 }, { 8, 3, 45 }, { 8, 5, 5 }, { 5, 7, 53 } };
+	const tipo_dato VALORES[12][3] = {
+
+	{ 1, 2, 66 },
+
+	{ 2, 8, 330 },
+
+	{ 3, 1, 50 },
+
+	{ 1, 4, 3 },
+
+	{ 4, 2, 8 },
+
+	{ 2, 9, 74 },
+
+	{ 1, 5, 90 },
+
+	{ 1, 6, 12 },
+
+	{ 1, 7, 83 },
+
+	{ 8, 3, 45 },
+
+	{ 8, 5, 5 },
+
+	{ 5, 7, 53 }
+
+	};
 
 	const tipo_dato VALORES_ESPERADOS[18][8] = {
 
@@ -756,15 +801,17 @@ START_TEST( test_grafo_copia_profunda_lista_ignorar) {
 	 * 9 8=====D 2
 	 */
 
+	int mierda = 1;
 	int filas = 12;
 	int resultado = 0;
-	char buffer[MAX_TAM_CADENA];
+	char *buffer = NULL;
 	tipo_dato lista_exclusion[2] = { 4, 9 };
-	tipo_dato **caca = NULL;
 	tipo_dato matrix_ordenada[18][8] = { { 0 } };
 
 	grafo_contexto ctx_origen;
 	grafo_contexto ctx_destino;
+
+	buffer = calloc(1000, sizeof(char));
 
 	resultado = init_grafo((void*) VALORES, filas, &ctx_origen, verdadero,
 			verdadero);
@@ -775,14 +822,16 @@ START_TEST( test_grafo_copia_profunda_lista_ignorar) {
 	grafo_copia_profunda(&ctx_origen, &ctx_destino, lista_exclusion,
 			sizeof(lista_exclusion) / sizeof(tipo_dato));
 
-	caca = malloc(8 * sizeof(tipo_dato *));
-	*caca = malloc(18 * sizeof(tipo_dato));
-	from_stack(caca);
-	from_stack(matrix_ordenada);
+	/*
+	 while (mierda) {
+	 sleep(10);
+	 }
+	 */
 
 	caca_log_debug("el grafo original");
 	imprimir_lista_adjacencia(ctx_origen.inicio);
-	caca_log_debug("la copia");
+	caca_log_debug("la copia, con inicio %p", ctx_destino.inicio);
+
 	imprimir_lista_adjacencia(ctx_destino.inicio);
 	grafo_get_representacion_en_matriz_ordenada(&ctx_destino, matrix_ordenada,
 			8);
@@ -802,7 +851,7 @@ START_TEST( test_grafo_copia_profunda_lista_ignorar) {
 
 	zlog_fini();
 
-	ck_assert_msg(resultado, "todo en orden %p", resultado);
+	ck_assert_msg(resultado, "todo en orden %s", resultado);
 
 }
 END_TEST
@@ -816,6 +865,8 @@ cacacomun_suite(void) {
 	TCase *tc_core = tcase_create("Core");
 	tcase_set_timeout(tc_core, 600);
 //	tcase_add_test(tc_core, test_lee_matrix_long_stdin);
+	/*
+	 */
 	tcase_add_test(tc_core, test_lee_matrix);
 	tcase_add_test(tc_core, test_lee_matrix_stdin);
 	tcase_add_test(tc_core, test_apuntador_arreglo);
@@ -833,7 +884,8 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_dijkstra);
 	tcase_add_test(tc_core, test_grafo_copia_profunda);
 	tcase_add_test(tc_core, test_grafo_copia_profunda_lista_ignorar);
-
+	/*
+	 */
 	suite_add_tcase(s, tc_core);
 
 	return s;
@@ -843,6 +895,7 @@ int main(void) {
 	int number_failed;
 	Suite *s = cacacomun_suite();
 	SRunner *sr = srunner_create(s);
+	caca_log_debug("mierdaaaa");
 	srunner_run_all(sr, CK_VERBOSE);
 	number_failed = srunner_ntests_failed(sr);
 	srunner_free(sr);
