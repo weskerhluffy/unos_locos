@@ -1102,12 +1102,20 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 	nodo_arbol_binario *raiz_int = NULL;
 
 	raiz_int = *raiz;
-	char buffer[MAX_TAM_CADENA];
-	char buffer1[MAX_TAM_CADENA];
+	char *buffer = NULL;
+	char *buffer1 = NULL;
+
+	buffer = calloc(1000, sizeof(char));
+	buffer1 = calloc(1000, sizeof(char));
 
 	caca_log_debug("Insertando nodo %s, ancestro actual %s",
 			arbol_binario_nodo_a_cadena(nodo_a_insertar,buffer,NULL),
-			arbol_binario_nodo_a_cadena(raiz_int,buffer1,NULL));
+			raiz_int? arbol_binario_nodo_a_cadena(raiz_int,buffer1,NULL):"No hay nada en raiz");
+
+	if (!raiz_int) {
+		*raiz = nodo_a_insertar;
+		return;
+	}
 
 	switch (arbol_avl_compara_nodos(raiz_int, nodo_a_insertar)) {
 	case CACA_COMPARACION_IZQ_MENOR:
@@ -1553,14 +1561,14 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario **raiz,
 
 	if (!nodo_a_borrar) {
 		caca_log_debug("Nodo a borrar nula, pq la mandan?");
-		return;
+		abort();
 	}
 
 	if (!(nodo_a_borrar_padre = ARBOL_AVL_GET_PADRE(nodo_a_borrar))) {
 		nodo_a_borrar_padre = NULL;
 		nodo_a_borrar_ref = raiz;
 	} else {
-		caca_log_debug("Borrando nodo raiz");
+		caca_log_debug("Borrando nodo no raiz");
 
 		caca_log_debug("Calculando referencia en arbolazo, padre %p",
 				nodo_a_borrar_padre);
