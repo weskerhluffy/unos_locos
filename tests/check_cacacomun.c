@@ -524,7 +524,8 @@ START_TEST( test_cola_prioridad_pop) {
 
 	caca_log_debug("empezando el año");
 
-	cola_prioridad_init(&ctx, NULL, VALORES, NULL, NUM_VALORES, NULL, NULL );
+	cola_prioridad_init(&ctx, NULL, (tipo_dato *) VALORES, NULL, NUM_VALORES,
+			NULL, NULL );
 
 	referencias_directas = ctx.referencias_directas_por_indice;
 
@@ -575,7 +576,7 @@ START_TEST( test_dijkstra) {
 
 	caca_log_debug("yo no olvido al año viejo");
 
-	dijkstra_main((void *) VERTICES, NUM_VERTICES, 0, 0,
+	dijkstra_main((void *) VERTICES, NUM_VERTICES, 0, 0, NULL,
 			distancias_minimas_calculadas, antecesores);
 
 	resultado = !memcmp(DISTANCIAS_FINALES, distancias_minimas_calculadas,
@@ -801,7 +802,6 @@ START_TEST( test_grafo_copia_profunda_lista_ignorar) {
 	 * 9 8=====D 2
 	 */
 
-	int mierda = 1;
 	int filas = 12;
 	int resultado = 0;
 	char *buffer = NULL;

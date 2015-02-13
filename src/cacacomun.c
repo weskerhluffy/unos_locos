@@ -1826,7 +1826,8 @@ void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
 
 void dijkstra_main(void *matrix_distancias, int num_filas,
 		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
-		tipo_dato *distancias_minimas, tipo_dato *antecesores) {
+		grafo_contexto *gctx, tipo_dato *distancias_minimas,
+		tipo_dato *antecesores) {
 
 	int contador = 0;
 	int num_nodos = 0;
@@ -1834,7 +1835,8 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 	tipo_dato indice_origen_actual = 0;
 	tipo_dato indice_destino_actual = 0;
 
-	grafo_contexto gctx;
+	grafo_contexto gctx_mem;
+	grafo_contexto *gctx_int;
 	cola_prioridad_contexto cpctx;
 
 	nodo *nodo_origen_actual = NULL;
@@ -1849,13 +1851,18 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 
 	caca_inutiliza_nodo_cola_prioridad(distancias_minimas_nodos, MAX_NODOS);
 
-	init_grafo(matrix_distancias, num_filas, &gctx, falso, verdadero);
+	if (gctx) {
+		gctx_int = gctx;
+	} else {
+		gctx_int = &gctx_mem;
+	}
+	init_grafo(matrix_distancias, num_filas, gctx_int, falso, verdadero);
 
 	caca_log_debug("INitiado grafo");
 
-	imprimir_lista_adjacencia(gctx.inicio);
+	imprimir_lista_adjacencia(gctx_int->inicio);
 
-	nodo_origen_actual = gctx.inicio;
+	nodo_origen_actual = gctx_int->inicio;
 
 	while (nodo_origen_actual) {
 		caca_log_debug("initializando nodo de cola d prioridad de %s",
@@ -1892,7 +1899,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 				arbol_binario_nodo_a_cadena(nodo_mas_cercas,buffer,NULL));
 
 		indice_origen_actual = nodo_mas_cercas->indice;
-		nodo_origen_actual = grafo_get_nodo_origen_por_indice(&gctx,
+		nodo_origen_actual = grafo_get_nodo_origen_por_indice(gctx_int,
 				indice_origen_actual);
 
 		caca_log_debug("masajeando nodos de %s",
@@ -1903,7 +1910,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 		while ((nodo_destino_actual = nodo_destino_actual->siguiente_distancia)) {
 			indice_destino_actual = nodo_destino_actual->indice;
 			if (!(*(nodos_distancias_minimas_calculadas + indice_destino_actual))) {
-				dijkstra_relaxar_nodo(&gctx, &cpctx, indice_origen_actual,
+				dijkstra_relaxar_nodo(gctx_int, &cpctx, indice_origen_actual,
 						indice_destino_actual, antecesores);
 				caca_log_debug("Relaxado nodo %s,distancia minima actual %ld",
 						grafo_nodo_a_cadena(nodo_destino_actual,buffer,NULL),
@@ -2339,4 +2346,20 @@ static inline void caca_inutiliza_nodo_cola_prioridad(
 				COLA_PRIORIDAD_VALOR_INVALIDO);
 		COLA_PRIORIDAD_ASIGNA_VALOR((nodos + i), COLA_PRIORIDAD_VALOR_INVALIDO);
 	}
+}
+
+char *caca_arreglo_a_cadena_float(float *arreglo, int tam_arreglo, char *buffer) {
+	char *ap_buffer = NULL;
+	int characteres_escritos = 0;
+
+	ap_buffer = buffer;
+
+	for (int i = 0; i < tam_arreglo; i++) {
+		characteres_escritos += sprintf(ap_buffer + characteres_escritos, "%f",
+				*(arreglo + i));
+		if (i < tam_arreglo - 1) {
+			*(ap_buffer + characteres_escritos++) = ',';
+		}
+	}
+	return ap_buffer;
 }

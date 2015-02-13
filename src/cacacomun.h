@@ -435,7 +435,8 @@ tipo_dato grafo_get_distancia_entre_nodos_por_indice(grafo_contexto *ctx,
 
 void dijkstra_main(void *matrix_distancias, int num_filas,
 		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
-		tipo_dato *distancias_minimas, tipo_dato *antecesores);
+		grafo_contexto *gctx, tipo_dato *distancias_minimas,
+		tipo_dato *antecesores);
 
 char *caca_arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer);
 
@@ -457,5 +458,7 @@ void grafo_copia_profunda(const grafo_contexto *ctx_origen,
 
 static inline void caca_inutiliza_nodo_cola_prioridad(
 		nodo_cola_prioridad *nodos, int num_nodos);
+
+char *caca_arreglo_a_cadena_float(float *arreglo, int tam_arreglo, char *buffer);
 
 #endif /* CACACOMUN_H_ */
