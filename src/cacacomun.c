@@ -1042,6 +1042,7 @@ void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *indices,
 
 	memset((void * ) ctx, 0, sizeof(arbol_binario_contexto));
 	memset((void * ) ctx->nodos_disponibles, 0, sizeof(ctx->nodos_disponibles));
+	caca_log_debug("initializando con num de datos %d", num_datos);
 
 	for (i = 0; i < num_datos; i++) {
 		caca_log_debug("en contador %d indice %ld", i,
@@ -1834,6 +1835,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 
 	tipo_dato indice_origen_actual = 0;
 	tipo_dato indice_destino_actual = 0;
+	tipo_dato max_indice = 0;
 
 	grafo_contexto gctx_mem;
 	grafo_contexto *gctx_int;
@@ -1847,7 +1849,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 	char buffer[MAX_TAM_CADENA] = { '\0' };
 	nodo_cola_prioridad distancias_minimas_nodos[MAX_NODOS];
 
-	caca_log_debug("INitiado dikstra");
+	caca_log_debug("INitiado dikstra con nodo origen %ld", ind_nodo_origen);
 
 	caca_inutiliza_nodo_cola_prioridad(distancias_minimas_nodos, MAX_NODOS);
 
@@ -1855,8 +1857,8 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 		gctx_int = gctx;
 	} else {
 		gctx_int = &gctx_mem;
+		init_grafo(matrix_distancias, num_filas, gctx_int, falso, verdadero);
 	}
-	init_grafo(matrix_distancias, num_filas, gctx_int, falso, verdadero);
 
 	caca_log_debug("INitiado grafo");
 
@@ -1876,6 +1878,14 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 			(distancias_minimas_nodos + nodo_origen_actual->indice)->valor =
 					MAX_VALOR;
 		}
+		if (nodo_origen_actual->indice > max_indice) {
+			max_indice = nodo_origen_actual->indice;
+			if (max_indice > MAX_NODOS) {
+				perror(
+						"El indice maximo supera el maximo de nodos permitidos, a la mierda todo");
+				abort();
+			}
+		}
 		(distancias_minimas_nodos + nodo_origen_actual->indice)->indice =
 				nodo_origen_actual->indice;
 		GRAFO_AVANZAR_NODO(nodo_origen_actual, GRAFO_PRINCIPAL, falso);
@@ -1883,10 +1893,11 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 	}
 	num_nodos = contador;
 
-	caca_log_debug("initializando cola de prioridad ");
+	caca_log_debug("initializando cola de prioridad con indice maximo %ld",
+			max_indice);
 
 	cola_prioridad_init(&cpctx, distancias_minimas_nodos, NULL, NULL,
-			contador + 1, NULL, NULL );
+			max_indice + 1, NULL, NULL );
 
 	caca_log_debug("a punto de relaxar todos los nodos");
 
@@ -1926,7 +1937,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 		contador++;
 	}
 	*(antecesores + ind_nodo_origen) = 0;
-	for (int i = 0; i < num_nodos + 1; i++) {
+	for (int i = 0; i < max_indice + 1; i++) {
 		caca_log_debug("llenando distancia minima de %d", i);
 		*(distancias_minimas + i) =
 				i == ind_nodo_origen ? 0 :
@@ -1948,6 +1959,8 @@ void cola_prioridad_init(cola_prioridad_contexto *ctx,
 	memset(ctx, 0, sizeof(cola_prioridad_contexto));
 	memset(ctx->referencias_directas_por_indice_mem, 0,
 			sizeof(ctx->referencias_directas_por_indice_mem));
+	memset(indices_int, COLA_PRIORIDAD_VALOR_INVALIDO, sizeof(indices_int));
+	memset(datos, COLA_PRIORIDAD_VALOR_INVALIDO, sizeof(datos));
 
 	if (actx) {
 		if (!referencias_directas) {

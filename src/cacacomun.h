@@ -25,7 +25,7 @@
 
 #define tipo_dato unsigned long
 
-#define MAX_NODOS 100
+#define MAX_NODOS 101
 #define TAM_MAX_LINEA 1024
 #define TAM_MAX_NUMERO 128
 #define MAX_FILAS_INPUT 10000
