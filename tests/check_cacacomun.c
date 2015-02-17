@@ -76,24 +76,6 @@ START_TEST( test_lee_matrix_stdin) {
 }
 END_TEST
 
-START_TEST( test_init_grapho) {
-
-	const tipo_dato VALORES[3][3] = { { 1, 2, 3 }, { 2, 1, 330 }, { 3, 1, 50 } };
-	int filas = 3;
-	int resultado = 0;
-	grafo_contexto ctx;
-
-	caca_log_debug("los valores %p", VALORES);
-
-	resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero, verdadero);
-
-	imprimir_lista_adjacencia(ctx.inicio);
-	zlog_fini();
-
-	ck_assert_msg(resultado, "todo en orden %d", resultado);
-}
-END_TEST
-
 START_TEST( test_lee_matrix_long_stdin) {
 
 	const char EOT[] = { 4, '\0' };
@@ -116,23 +98,6 @@ START_TEST( test_lee_matrix_long_stdin) {
 	char *apuntador_linea = NULL;
 	char cagada[MAX_FILAS_INPUT][TAM_MAX_LINEA] = { { '\0' } };
 
-	zlog_category_t *c;
-	zlog_category_t *c_fork;
-
-	init_zlog("/Users/ernesto/workspace/unos_locos/zlog.conf");
-
-	c = zlog_get_category("my_cat");
-	c_fork = zlog_get_category("test_fork");
-	cacategoria = zlog_get_category("cacacomun");
-	if (!c) {
-		printf("get cat fail\n");
-		zlog_fini();
-		exit(-2);
-	}
-	zlog_inicializado = verdadero;
-
-	zlog_info(c, "fucccckkkk!!!!");
-
 // XXX: http://stackoverflow.com/questions/13274786/how-to-share-memory-between-process-fork
 // XXX: https://code.google.com/p/asmjit/issues/detail?id=1
 	resultado_assestment = mmap(NULL, sizeof *resultado_assestment,
@@ -146,7 +111,6 @@ START_TEST( test_lee_matrix_long_stdin) {
 			if (numero_actual) {
 				caracteres_escritos = sprintf(apuntador_linea, "%ld",
 						numero_actual);
-				zlog_debug(c, "en %d %d el num %ld", i, j, numero_actual);
 				if (caracteres_escritos < 0) {
 					fprintf(stderr,
 							"El numero no se pudo convertir, error fatal \n");
@@ -158,75 +122,68 @@ START_TEST( test_lee_matrix_long_stdin) {
 			}
 		}
 		*apuntador_linea++ = '\n';
-		zlog_debug(c, "llllllinea %d: %s", i, *(cagada + i));
 		*(num_columnas_esperado + i) = nums_escritos;
 	}
 	num_filas_esperado = i;
-
-	zlog_debug(c, "El # de filas esperado %d", num_filas_esperado);
-	for (i = 0; i < num_filas_esperado; i++) {
-		zlog_debug(c, "en fila %d, columnas %d", i,
-				*(num_columnas_esperado + i));
-	}
 
 	pid = forkpty(&ptyfd, 0, 0, 0);
 	if (pid < 0) {
 		perror("forkpty"), exit(1);
 	}
 
-	zlog_debug(c, "antes de aventar caca %d", pid);
-
 	*resultado_assestment = -1;
 
 	if (!pid) {
-		zlog_debug(c_fork, "leyendo cagada %p en pid %d con stack %p",
-				cacategoria, getpid(), sbrk(0));
-		lee_matrix_long_stdin(resultados_reales, &num_filas, num_columnas);
+		lee_matrix_long_stdin((tipo_dato *)resultados_reales, &num_filas, num_columnas,
+				MAX_FILAS_INPUT, MAX_COLUMNAS_INPUT);
 
-		zlog_debug(c_fork, "antes d imprimir resultados reales");
 		caca_imprime_matrix(resultados_reales, num_filas, num_columnas, 0);
-		zlog_debug(c_fork, "despues d imprimir resultados reales");
 
 		*resultado_assestment = !memcmp(resultados_reales, VALORES_ESPERADOS, 9)
 				&& !memcmp(num_columnas_esperado, num_columnas, 3)
 				&& num_filas == num_filas_esperado;
-		zlog_debug(c_fork, "el resultado del assestment %d en child",
-				*resultado_assestment);
 
 	} else {
-		system("echo 'carajo' > /tmp/shit.txt");
-		zlog_info(c, "escribiendo pendejadas");
 		for (int i = 0; i < 3; i++) {
-			zlog_info(c, "la linea que avienta %s", *(cagada + i));
 			write(ptyfd, *(cagada + i), strlen(*(cagada + i)));
 		}
 		write(ptyfd, EOT, 1);
-		zlog_info(c, "escribio pendejadassss");
 	}
 
 	if (pid) {
-		zlog_debug(c, "termino desmadre de mierda en padree %d, esperando %d",
-				getpid(), pid);
-//waitpid(pid, &i, WUNTRACED | WCONTINUED);
-//			wait(&i);
 		while (*resultado_assestment < 0) {
-			zlog_debug(c, "esperando el resultado del ijo d 1000 putas");
 			sleep(5);
 		}
-		zlog_debug(c, "ya regreso el ijo de 1000 putas %d", i);
 		close(ptyfd);
-		zlog_debug(c, "cerro el putoy");
-		zlog_info(c, "hello, zlog %d ", pid);
-
-		zlog_debug(c, "el resultado del assestment %d en %d",
-				*resultado_assestment, pid);
 		ck_assert_msg(*resultado_assestment > 0, "Las matrices no son =s");
 		zlog_fini();
-	} else {
-		zlog_debug(c_fork, "termino desmadre de mierda en hijo");
-		exit(3);
 	}
+
+	/*else {
+	 exit(3);
+	 }
+	 */
 }
+
+END_TEST
+
+START_TEST( test_init_grapho) {
+
+	const tipo_dato VALORES[3][3] = { { 1, 2, 3 }, { 2, 1, 330 }, { 3, 1, 50 } };
+	int filas = 3;
+	int resultado = 0;
+	grafo_contexto ctx;
+
+	caca_log_debug("los valores %p", VALORES);
+
+	resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero, verdadero);
+
+	imprimir_lista_adjacencia(ctx.inicio);
+	zlog_fini();
+
+	ck_assert_msg(resultado, "todo en orden %d", resultado);
+}
+
 END_TEST
 
 START_TEST( test_apuntador_arreglo) {
@@ -864,9 +821,7 @@ cacacomun_suite(void) {
 	/* Core test case */
 	TCase *tc_core = tcase_create("Core");
 	tcase_set_timeout(tc_core, 600);
-//	tcase_add_test(tc_core, test_lee_matrix_long_stdin);
-	/*
-	 */
+	tcase_add_test(tc_core, test_lee_matrix_long_stdin);
 	tcase_add_test(tc_core, test_lee_matrix);
 	tcase_add_test(tc_core, test_lee_matrix_stdin);
 	tcase_add_test(tc_core, test_apuntador_arreglo);
@@ -884,6 +839,8 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_dijkstra);
 	tcase_add_test(tc_core, test_grafo_copia_profunda);
 	tcase_add_test(tc_core, test_grafo_copia_profunda_lista_ignorar);
+	/*
+	 */
 	/*
 	 */
 	suite_add_tcase(s, tc_core);

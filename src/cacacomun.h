@@ -28,7 +28,7 @@
 #define MAX_NODOS 101
 #define TAM_MAX_LINEA 1024
 #define TAM_MAX_NUMERO 128
-#define MAX_FILAS_INPUT 10000
+#define MAX_FILAS_INPUT 5010
 #define MAX_COLUMNAS_INPUT 256
 #define MAX_FILAS_NODOS 1000
 #define MAX_COLUMNAS_NODOS 1000
@@ -307,8 +307,8 @@ int lee_matriz_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
  * @param num_columnas Regresa de cada fila el num de columnas. Debe ser inicializado externo. Debe ser al menos de tama�o ::MAX_FILAS_INPUT.
  * @return
  */
-int lee_matrix_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
-		int *num_filas, int *num_columnas);
+int lee_matrix_long_stdin(tipo_dato *matrix, int *num_filas, int *num_columnas,
+		int num_max_filas, int num_max_columnas);
 
 int caca_imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 		int num_columnas_fijo);
@@ -460,5 +460,8 @@ static inline void caca_inutiliza_nodo_cola_prioridad(
 		nodo_cola_prioridad *nodos, int num_nodos);
 
 char *caca_arreglo_a_cadena_float(float *arreglo, int tam_arreglo, char *buffer);
+
+void caca_realinea_array(tipo_dato *arreglo, int num_filas, int alineacion_actual,
+		int alineacion_nueva);
 
 #endif /* CACACOMUN_H_ */

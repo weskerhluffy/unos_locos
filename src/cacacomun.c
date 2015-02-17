@@ -75,8 +75,8 @@ int lee_matriz_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 
 // XXX: http://www.eclipse.org/forums/index.php/t/26571/
 // XXX: http://stackoverflow.com/questions/3537542/a-doxygen-eclipse-plugin-with-automatic-code-completion
-int lee_matrix_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
-		int *num_filas, int *num_columnas) {
+int lee_matrix_long_stdin(tipo_dato *matrix, int *num_filas, int *num_columnas,
+		int num_max_filas, int num_max_columnas) {
 	int indice_filas = 0;
 	int indice_columnas = 0;
 	long numero = 0;
@@ -87,6 +87,7 @@ int lee_matrix_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 	caca_log_debug("DDDDDDDDDDDentro de leer mierda");
 // XXX: http://stackoverflow.com/questions/2195823/reading-unknown-number-of-integers-from-stdin-c
 	while (fgets(linea, TAM_MAX_LINEA, stdin)) {
+		caca_log_debug("escaneando linea");
 		indice_columnas = 0;
 		caca_log_debug("transformando linea '%s'", linea);
 		cadena_numero_actual = linea;
@@ -101,18 +102,30 @@ int lee_matrix_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 			}
 			caca_log_debug("guardando el numero %ld en fil %d, col %d", numero,
 					indice_filas, indice_columnas);
-			*(*(matrix + indice_filas) + indice_columnas) = numero;
+			*(matrix + indice_filas * num_max_columnas + indice_columnas) =
+					numero;
 			indice_columnas++;
+			if (indice_columnas >= num_max_columnas) {
+				perror("se leyeron demasiadas columnas, a la verga");
+				abort();
+			}
 		}
 		caca_log_debug("salio del ciclo de linea");
 //		*(*num_columnas + indice_filas) = indice_columnas;
-		num_columnas[indice_filas] = indice_columnas;
+		if (num_columnas) {
+			num_columnas[indice_filas] = indice_columnas;
+		}
 		caca_log_debug("c asigno el numero de columnas");
 		indice_filas++;
 		caca_log_debug("terminada de procesar linea '%s'", linea);
+		if (indice_filas >= num_max_filas) {
+			perror("se leyeron demasiadas filas, a la verga");
+			abort();
+		}
 	}
 
 	*num_filas = indice_filas;
+	caca_log_debug("termino de recibir mierda");
 	return 0;
 }
 
@@ -144,10 +157,14 @@ int caca_imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 	num_columnas_actual = num_columnas_fijo ? num_columnas_fijo : 0;
 
 	for (i = 0; i < num_filas; i++) {
-//		caca_log_debug("En la fila %d de %d", i, num_filas);
+		caca_log_debug("En la fila %d de %d", i, num_filas);
 		if (num_columnas) {
 			num_columnas_actual = *(num_columnas + i);
 		}
+		if (num_columnas_fijo) {
+			num_columnas_actual = num_columnas_fijo;
+		}
+//		caca_log_debug("el num d cols actual %d", num_columnas_actual);
 		for (j = 0; j < num_columnas_actual; j++) {
 			//		caca_log_debug("En la columna %d de %d", j, num_columnas_actual);
 			if (es_array) {
@@ -2375,4 +2392,15 @@ char *caca_arreglo_a_cadena_float(float *arreglo, int tam_arreglo, char *buffer)
 		}
 	}
 	return ap_buffer;
+}
+
+void caca_realinea_array(tipo_dato *arreglo, int num_filas, int alineacion_actual,
+		int alineacion_nueva) {
+	for (int i = 0; i < num_filas; i++) {
+		for (int j = 0; j < alineacion_nueva; j++) {
+			*(arreglo + i * alineacion_nueva + j) = *(arreglo
+					+ i * alineacion_actual + j);
+		}
+
+	}
 }
