@@ -1,3 +1,4 @@
+#include <config.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -7,8 +8,12 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
-#include <util.h>
-#include <execinfo.h>
+#ifdef HAVE_UTIL_H
+#	include <util.h>
+#endif
+#ifdef HAVE_EXECINFO_H
+#	include <execinfo.h>
+#endif
 #include <check.h>
 #include <zlog.h>
 #include "../src/cacacomun.h"
@@ -54,7 +59,7 @@ START_TEST( test_lee_matrix_stdin) {
 	const char *cagada =
 			"1000000000000000 10000000000000000\n2 12\n9007199254740992 9007199254740992\n";
 
-	//XXX: http://stackoverflow.com/questions/5740176/how-do-i-write-a-testing-function-for-another-function-that-uses-stdin-input
+	/* XXX: http://stackoverflow.com/questions/5740176/how-do-i-write-a-testing-function-for-another-function-that-uses-stdin-input*/
 	pid = forkpty(&ptyfd, 0, 0, 0);
 	if (pid < 0)
 		perror("forkpty"), exit(1);
@@ -79,7 +84,7 @@ END_TEST
 START_TEST( test_lee_matrix_long_stdin) {
 
 	const char EOT[] = { 4, '\0' };
-// XXX: http://cboard.cprogramming.com/c-programming/113489-initializing-2d-array-c.html
+/*  XXX: http://cboard.cprogramming.com/c-programming/113489-initializing-2d-array-c.html */
 	const tipo_dato VALORES_ESPERADOS[3][3] = { { 10, 20, 30 }, { 100, 0, 0 }, {
 			1000, 2000, 0 } };
 
@@ -98,8 +103,8 @@ START_TEST( test_lee_matrix_long_stdin) {
 	char *apuntador_linea = NULL;
 	char cagada[MAX_FILAS_INPUT][TAM_MAX_LINEA] = { { '\0' } };
 
-// XXX: http://stackoverflow.com/questions/13274786/how-to-share-memory-between-process-fork
-// XXX: https://code.google.com/p/asmjit/issues/detail?id=1
+/*  XXX: http://stackoverflow.com/questions/13274786/how-to-share-memory-between-process-fork */
+/*  XXX: https://code.google.com/p/asmjit/issues/detail?id=1 */
 	resultado_assestment = mmap(NULL, sizeof *resultado_assestment,
 			PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0);
 
@@ -134,7 +139,8 @@ START_TEST( test_lee_matrix_long_stdin) {
 	*resultado_assestment = -1;
 
 	if (!pid) {
-		lee_matrix_long_stdin((tipo_dato *)resultados_reales, &num_filas, num_columnas,
+		lee_matrix_long_stdin((tipo_dato *) resultados_reales, &num_filas,
+				num_columnas,
 				MAX_FILAS_INPUT, MAX_COLUMNAS_INPUT);
 
 		caca_imprime_matrix(resultados_reales, num_filas, num_columnas, 0);
@@ -293,7 +299,7 @@ START_TEST( test_init_arbol_avl) {
 	tipo_dato valores_preorder_resultado[6] = { 0 };
 	arbol_binario_contexto ctx;
 
-	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 6, NULL );
+	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 6, NULL);
 
 	arbol_binario_colectar_datos_recorrido_preoder(ctx.raiz,
 			valores_preorder_resultado, &resultado);
@@ -319,7 +325,7 @@ START_TEST( test_borrar_arbol_binario) {
 	tipo_dato valores_preorder_resultado[4] = { 0 };
 	arbol_binario_contexto ctx;
 
-	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 7, NULL );
+	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 7, NULL);
 
 	arbol_binario_borrar_nodo(&ctx.raiz, 20);
 	arbol_binario_borrar_nodo(&ctx.raiz, 30);
@@ -349,7 +355,7 @@ START_TEST( test_borrar_arbol_avl) {
 	tipo_dato valores_preorder_resultado[8] = { 0 };
 	arbol_binario_contexto ctx;
 
-	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9, NULL );
+	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9, NULL);
 
 	caca_log_debug("La secuencia inicial es:");
 	arbol_binario_recorrido_preoder(ctx.raiz);
@@ -463,9 +469,9 @@ START_TEST( test_dijkstra_modificar_valor_nodo) {
 }
 END_TEST
 
+#define NUM_VALORES  9
 START_TEST( test_cola_prioridad_pop) {
 
-	const int NUM_VALORES = 9;
 
 	const tipo_dato VALORES[NUM_VALORES] = { 9, 5, 10, 1, 6, 11, 0, 2, 3 };
 	const tipo_dato VALORES_FINALES_INORDER[NUM_VALORES - 2] = { 2, 3, 4, 5, 6,
@@ -482,7 +488,7 @@ START_TEST( test_cola_prioridad_pop) {
 	caca_log_debug("empezando el año");
 
 	cola_prioridad_init(&ctx, NULL, (tipo_dato *) VALORES, NULL, NUM_VALORES,
-			NULL, NULL );
+			NULL, NULL);
 
 	referencias_directas = ctx.referencias_directas_por_indice;
 
@@ -512,9 +518,9 @@ START_TEST( test_cola_prioridad_pop) {
 }
 END_TEST
 
+#define NUM_VERTICES  14
 START_TEST( test_dijkstra) {
 
-	const int NUM_VERTICES = 14;
 
 	const tipo_dato VERTICES[NUM_VERTICES][3] = { { 0, 1, 4 }, { 0, 7, 8 }, { 1,
 			7, 11 }, { 1, 2, 8 }, { 7, 8, 7 }, { 7, 6, 1 }, { 2, 8, 2 }, { 8, 6,
@@ -666,18 +672,18 @@ START_TEST( test_grafo_copia_profunda) {
 	caca_log_debug("alojaaaaa");
 	resultado = !memcmp(matrix_ordenada, VALORES_ESPERADOS,
 			sizeof(VALORES_ESPERADOS));
-//	caca_imprime_matrix(VALORES_ESPERADOS, 18, NULL, 8);
+/* 	caca_imprime_matrix(VALORES_ESPERADOS, 18, NULL, 8); */
 	caca_log_debug("la matrix como arreglo %s, de tama %d",
 			caca_arreglo_a_cadena((tipo_dato *)VALORES_ESPERADOS, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
 			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
 	caca_log_debug("mierdaaaa");
-//	caca_imprime_matrix(matrix_ordenada, 18, NULL, 8);
+/* 	caca_imprime_matrix(matrix_ordenada, 18, NULL, 8); */
 	caca_log_debug("la matrix copiada como arreglo %s, de tama %d",
 			caca_arreglo_a_cadena((tipo_dato *)matrix_ordenada, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
 			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
 
 	caca_log_debug("termino esta mierda");
-//	zlog_fini();
+/* 	zlog_fini(); */
 
 	ck_assert_msg(resultado, "todo en orden %d", resultado);
 
@@ -796,12 +802,12 @@ START_TEST( test_grafo_copia_profunda_lista_ignorar) {
 	caca_log_debug("alojaaaaa");
 	resultado = !memcmp(matrix_ordenada, VALORES_ESPERADOS,
 			sizeof(VALORES_ESPERADOS));
-//	caca_imprime_matrix(VALORES_ESPERADOS, 18, NULL, 8);
+/* 	caca_imprime_matrix(VALORES_ESPERADOS, 18, NULL, 8); */
 	caca_log_debug("la matrix como arreglo %s, de tama %d",
 			caca_arreglo_a_cadena((tipo_dato *)VALORES_ESPERADOS, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
 			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
 	caca_log_debug("mierdaaaa");
-//	caca_imprime_matrix(matrix_ordenada, 18, NULL, 8);
+/* 	caca_imprime_matrix(matrix_ordenada, 18, NULL, 8); */
 	caca_log_debug("la matrix copiada como arreglo %s, de tama %d",
 			caca_arreglo_a_cadena((tipo_dato *)matrix_ordenada, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
 			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
@@ -852,7 +858,6 @@ int main(void) {
 	int number_failed;
 	Suite *s = cacacomun_suite();
 	SRunner *sr = srunner_create(s);
-	caca_log_debug("mierdaaaa");
 	srunner_run_all(sr, CK_VERBOSE);
 	number_failed = srunner_ntests_failed(sr);
 	srunner_free(sr);

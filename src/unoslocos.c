@@ -17,7 +17,7 @@ unsigned int num_bits_req(unsigned long numero) {
 	int num_bits_long = sizeof(unsigned long) * 8;
 	int i = 0;
 	for (i = num_bits_long - 1; i >= 0; i--) {
-		if (bit(numero,i)) {
+		if (bit(numero, i)) {
 			return i + 1;
 		}
 	}
@@ -74,8 +74,8 @@ unsigned long num_unos(unsigned long numero_1, unsigned long numero_2) {
 		longitud_unos = (unsigned long) 1 << pos_bit;
 		periodo_binario = longitud_unos << 1;
 
-		bit_extremo_1 = bit(numero_1,pos_bit);
-		bit_extremo_2 = bit(numero_2,pos_bit);
+		bit_extremo_1 = bit(numero_1, pos_bit);
+		bit_extremo_2 = bit(numero_2, pos_bit);
 
 		if (!bit_extremo_1 && !bit_extremo_2) {
 			caso_extremos = EXTREMOS_0_0;
@@ -165,10 +165,10 @@ int contar_caca(const char * nombre_archivo,
 	int filas_encontradas_tmp = 0;
 	int indice_filas = 0;
 
-	if (nombre_archivo == NULL ) {
+	if (nombre_archivo == NULL) {
 		lee_matriz_long_stdin(matrix, &filas_encontradas_tmp);
 	} else {
-		lee_matriz_int_archivo(nombre_archivo, matrix, &filas_encontradas_tmp);
+		mierda(nombre_archivo, matrix, &filas_encontradas_tmp);
 	}
 	for (indice_filas = 0; indice_filas < filas_encontradas_tmp;
 			indice_filas++) {
