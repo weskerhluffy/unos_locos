@@ -16,6 +16,8 @@ int main(int argc, char *argv[]) {
 	int i = 0;
 	unsigned long conteo_unos = 0;
 
+	sleep(10);
+
 	if (argc < 2) {
 		contar_caca(NULL, unos, &filas_encontradas);
 	} else {

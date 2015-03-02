@@ -182,6 +182,7 @@ START_TEST( test_apuntador_allocado) {
 	for (int i = 0; i < 3; i++) {
 		*(valores + i) = (tipo_dato *) malloc(10 * sizeof(tipo_dato));
 	}
+	caca_log_debug("o o");
 
 	zlog_fini();
 
@@ -505,9 +506,11 @@ cacacomun_suite(void) {
 	/* Core test case */
 	TCase *tc_core = tcase_create("Core");
 	tcase_set_timeout(tc_core, 600);
+	/*
 	tcase_add_test(tc_core, test_lee_matrix_long_stdin);
 	tcase_add_test(tc_core, test_lee_matrix);
 	tcase_add_test(tc_core, test_lee_matrix_stdin);
+	*/
 	tcase_add_test(tc_core, test_apuntador_allocado);
 	tcase_add_test(tc_core, test_imprime_apuntador);
 	tcase_add_test(tc_core, test_imprime_array);

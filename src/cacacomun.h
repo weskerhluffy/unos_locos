@@ -69,25 +69,7 @@ typedef enum BOOLEANOS {
 
 
 #define GRAFO_AVANZAR_NODO(nodo_apuntador,criterio_busqueda,discriminar_principal) \
-		switch (criterio_busqueda) { \
-	 	case GRAFO_VALOR: \
-			nodo_apuntador = (nodo_apuntador)->siguiente_valor; \
-			break; \
-		case GRAFO_DISTANCIA: \
-			nodo_apuntador = (nodo_apuntador)->siguiente_distancia; \
-			break; \
-		case GRAFO_INDICE: \
-			nodo_apuntador = (nodo_apuntador)->siguiente_indice; \
-			break; \
-		case GRAFO_PRINCIPAL: \
-			if(!discriminar_principal) { \
-				nodo_apuntador = (nodo_apuntador)->siguiente; \
-			} \
-			break; \
-		default: \
-			perror("en GRAFO_AVANZAR_NODO  hubo un error culero al buscar"); \
-			break; \
-		}
+		nodo_apuntador = (nodo_apuntador)->siguiente;
 
 #define GRAFO_COPIA_NODO_DATOS(nodo_origen,nodo_destino) \
 		nodo_destino->valor=nodo_destino->valor; \
@@ -184,12 +166,9 @@ typedef enum BOOLEANOS {
 			size_t profundidad = 0; \
 			void *array[MAX_TAM_CADENA]; \
  			profundidad = backtrace(array, MAX_TAM_CADENA); \
+			caca_log_debug_func(formato,__FILE__, __func__, __LINE__,profundidad,##args); \
 		} \
 		while(0);
-
-/*
- #define caca_log_debug(formato, args...) (void) 0
- */
 
 #define ARBOL_AVL_ACTUALIZAR_ALTURA(nodo) \
 	(nodo)->altura = ((nodo)->hijo_izq || (nodo)->hijo_der)? \

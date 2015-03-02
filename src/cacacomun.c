@@ -89,10 +89,9 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 
 		*(matrix_distancias + indice_origen_actual * MAX_COLUMNAS_NODOS
 				+ indice_destino_actual) = distancia_actual;
-		printf("seteando %ld en %ld,%ld\n",
-				*(matrix_distancias + indice_origen_actual * MAX_COLUMNAS_NODOS
-						+ indice_destino_actual), indice_origen_actual,
-				indice_destino_actual);
+		caca_log_debug("seteando %ld en %ld,%ld\n",
+				*(matrix_distancias + indice_origen_actual * MAX_COLUMNAS_NODOS + indice_destino_actual),
+				indice_origen_actual, indice_destino_actual);
 		if (relaciones_bidireccionales) {
 			*(matrix_distancias + indice_destino_actual * MAX_COLUMNAS_NODOS
 					+ indice_origen_actual) = distancia_actual;
@@ -603,11 +602,11 @@ void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
 	nodo_arbol_binario *distancia_min_destino = NULL;
 	nodo_arbol_binario **distancias_minimas = NULL;
 
-	matrix_distancias = (tipo_dato *) gctx->matrix_distancias;
+	matrix_distancias = (tipo_dato*) gctx->matrix_distancias;
 	dist_origen_dest = *(matrix_distancias
 			+ ind_nodo_origen * MAX_COLUMNAS_NODOS + ind_nodo_destino);
-	printf("distancia de %ld a %ld es %ld", ind_nodo_origen, ind_nodo_destino,
-			dist_origen_dest);
+	caca_log_debug("distancia de %ld a %ld es %ld", ind_nodo_origen,
+			ind_nodo_destino, dist_origen_dest);
 
 	distancias_minimas = cpctx->referencias_directas_por_indice;
 
@@ -623,7 +622,6 @@ void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
 		}
 	}
 }
-
 void dijkstra_main(void *matrix_distancias, int num_filas,
 		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
 		grafo_contexto *gctx, tipo_dato *distancias_minimas,
@@ -648,7 +646,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 	bool nodos_distancias_minimas_calculadas[MAX_NODOS] = { falso };
 	nodo_cola_prioridad distancias_minimas_nodos[MAX_NODOS];
 
-	printf("fairy tail\n");
+	caca_log_debug("fairy tail\n");
 
 	caca_inutiliza_nodo_cola_prioridad(distancias_minimas_nodos, MAX_NODOS);
 
@@ -659,15 +657,15 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 		init_grafo(matrix_distancias, num_filas, gctx_int, falso, verdadero);
 	}
 	matrix_distancias_int = (tipo_dato *) gctx_int->matrix_distancias;
-	printf("initializado matrix distancias %p , %ld\n", matrix_distancias_int,
-			*matrix_distancias_int);
+	caca_log_debug("initializado matrix distancias %p , %ld\n",
+			matrix_distancias_int, *matrix_distancias_int);
 
-	printf("initiado grafo tamanio matrix distancias %ld\n",
+	caca_log_debug("initiado grafo tamanio matrix distancias %ld\n",
 			sizeof(gctx_int->matrix_distancias));
 
 	nodo_origen_actual = gctx_int->inicio;
 
-	printf("antes de recorrer nodos origenes\n");
+	caca_log_debug("antes de recorrer nodos origenes\n");
 	while (nodo_origen_actual) {
 		if (nodo_origen_actual->indice == ind_nodo_origen) {
 			(distancias_minimas_nodos + nodo_origen_actual->indice)->valor = 0;
@@ -690,7 +688,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 	}
 	num_nodos = contador;
 
-	printf("antes de niciar cola\n");
+	caca_log_debug("antes de niciar cola\n");
 	cola_prioridad_init(&cpctx, distancias_minimas_nodos, NULL, NULL,
 			max_indice + 1, NULL, NULL );
 
@@ -701,7 +699,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 				verdadero;
 
 		indice_origen_actual = nodo_mas_cercas->indice;
-		printf("tratando origen %ld\n", indice_origen_actual);
+		caca_log_debug("tratando origen %ld\n", indice_origen_actual);
 
 		for (int j = 0; j < MAX_COLUMNAS_NODOS; j++) {
 			distancia_actual = (tipo_dato) *(matrix_distancias_int
@@ -710,7 +708,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 			if (distancia_actual != GRAFO_VALOR_INVALIDO
 					&& !(*(nodos_distancias_minimas_calculadas
 							+ indice_destino_actual))) {
-				printf("relaxando destino %ld distancia %ld\n",
+				caca_log_debug("relaxando destino %ld distancia %ld\n",
 						indice_destino_actual, distancia_actual);
 				dijkstra_relaxar_nodo(gctx_int, &cpctx, indice_origen_actual,
 						indice_destino_actual, antecesores);
@@ -719,7 +717,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 
 		contador++;
 	}
-	printf("calculadas chingaderas\n");
+	caca_log_debug("calculadas chingaderas\n");
 	*(antecesores + ind_nodo_origen) = 0;
 	for (int i = 0; i < max_indice + 1; i++) {
 		*(distancias_minimas + i) =
@@ -729,7 +727,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 						(*(cpctx.referencias_directas_por_indice + i))->valor :
 						COLA_PRIORIDAD_VALOR_INVALIDO;
 	}
-	printf("saliendo de la mierda \n");
+	caca_log_debug("saliendo de la mierda \n");
 
 }
 
@@ -823,25 +821,25 @@ void grafo_copia_profunda(const grafo_contexto *ctx_origen,
 	nodo *nodo_destino_principal_actual = NULL;
 	nodo *nodo_destino_principal_previo = NULL;
 
-	printf("dentro de copia profunda %p\n", ctx_origen);
+	caca_log_debug("dentro de copia profunda %p\n", ctx_origen);
 
 	matrix_origen = (tipo_dato*) ctx_origen->matrix_distancias;
 	matrix_destino = (tipo_dato *) ctx_destino->matrix_distancias;
 	memcpy(matrix_destino, matrix_origen,
 			sizeof(ctx_origen->matrix_distancias));
 
-	printf("copio matrix %p, %ld\n", matrix_destino, *matrix_destino);
+	caca_log_debug("copio matrix %p, %ld\n", matrix_destino, *matrix_destino);
 
 	nodo_origen_principal_actual = ctx_origen->inicio;
-	printf("naruto %p\n", nodo_origen_principal_actual);
+	caca_log_debug("naruto %p\n", nodo_origen_principal_actual);
 	while (nodo_origen_principal_actual) {
 		indice_nodo_origen_actual = nodo_origen_principal_actual->indice;
-		printf("viendo si copiara %ld\n", indice_nodo_origen_actual);
+		caca_log_debug("viendo si copiara %ld\n", indice_nodo_origen_actual);
 		if (indices_a_ignorar
 				&& caca_arreglo_contiene(indices_a_ignorar,
 						tam_indices_a_ignorar, indice_nodo_origen_actual)) {
 
-			printf("ignorando %ld\n", indice_nodo_origen_actual);
+			caca_log_debug("ignorando %ld\n", indice_nodo_origen_actual);
 			for (int i = 0; i < MAX_FILAS_NODOS; i++) {
 				*(matrix_destino + i * MAX_COLUMNAS_NODOS
 						+ indice_nodo_origen_actual) = GRAFO_VALOR_INVALIDO;
@@ -852,9 +850,10 @@ void grafo_copia_profunda(const grafo_contexto *ctx_origen,
 						GRAFO_VALOR_INVALIDO;
 			}
 			GRAFO_AVANZAR_NODO(nodo_origen_principal_actual, 0, 0);
-			printf("ignorado %ld\n", indice_nodo_origen_actual);
+			caca_log_debug("ignorado %ld\n", indice_nodo_origen_actual);
 			continue;
 		}
+		caca_log_debug("coplando %ld\n", indice_nodo_origen_actual);
 		nodo_destino_principal_actual = grafo_nodo_alloc(ctx_destino, 1);
 		memset(nodo_destino_principal_actual, 0, sizeof(nodo));
 		grafo_copia_nodo(nodo_origen_principal_actual,
@@ -888,6 +887,7 @@ void grafo_copia_nodo(const nodo *nodo_origen, nodo *nodo_destino) {
 bool caca_arreglo_contiene(tipo_dato *arreglo, int tam_arreglo,
 		tipo_dato valor_buscado) {
 	for (int i = 0; i < tam_arreglo; i++) {
+		caca_log_debug("comprarando %ld con %ld", *(arreglo + i), valor_buscado);
 		if (*(arreglo + i) == valor_buscado) {
 			return verdadero;
 		}
@@ -1054,8 +1054,6 @@ char *caca_arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer) {
 	return ap_buffer;
 }
 
-
-
 int caca_imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 		int num_columnas_fijo) {
 	bool es_array = falso;
@@ -1069,8 +1067,6 @@ int caca_imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 	matrix_pointer = matrix;
 
 	caca_log_debug("Me corto los webos");
-
-	caca_log_debug("pero q mierda void pointer %p %p", matrix, sbrk(0));
 
 	es_array = verdadero;
 
@@ -1116,19 +1112,9 @@ int caca_imprime_matrix(void *matrix, int num_filas, int *num_columnas,
 	return 0;
 }
 
-
-
-
-
 bool from_stack(void *ptr) {
-	caca_log_debug("comparando %p con %p", ptr, sbrk(0));
 	return verdadero;
 }
-
-
-
-
-
 
 void grafo_get_representacion_en_matriz_ordenada(grafo_contexto *ctx,
 		void *matrix, int num_columnas) {
@@ -1297,3 +1283,83 @@ char *grafo_nodo_a_cadena(nodo *node, char *cadena_buffer,
 
 	return cadena_buffer;
 }
+
+void caca_log_debug_func(const char *format, ...) {
+	va_list arg;
+	va_list arg2;
+	const char *PEDAZO_TIMESTAMP_HEADER = "tiempo: %s; ";
+	const char *HEADER =
+			"archivo: %s; funcion: %s; linea %d; nivel: %zd caca 8====D ";
+	char formato[MAX_TAM_CADENA + sizeof(HEADER)
+			+ sizeof(PEDAZO_TIMESTAMP_HEADER)] = { '\0' };
+	char pedazo_timestamp[sizeof(PEDAZO_TIMESTAMP_HEADER) + 100] = { '\0' };
+	char cadena_timestamp[100] = { '\0' };
+
+	timestamp_caca(cadena_timestamp);
+	sprintf(pedazo_timestamp, PEDAZO_TIMESTAMP_HEADER, cadena_timestamp);
+
+	strcpy(formato, pedazo_timestamp);
+	strcat(formato, HEADER);
+	strcat(formato, format);
+
+	if (!zlog_inicializado) {
+		init_zlog("/Users/ernesto/workspace/unos_locos/zlog.conf");
+	}
+
+	if (!cacategoria) {
+		INIT_ZLOG_CATEGORY(cacategoria, "cacacomun");
+	}
+
+	va_start(arg, format);
+	va_copy(arg2, arg);
+	vzlog_debug(cacategoria, formato, arg2);
+	va_end(arg2);
+	va_end(arg);
+}
+
+void init_zlog(const char *arch_conf) {
+	int rc = 0;
+	rc = zlog_init(arch_conf);
+	if (rc) {
+		caca_log_debug("init failed\n");
+		exit(EXIT_FAILURE);
+	}
+	zlog_inicializado = verdadero;
+}
+
+void timestamp_caca(char *stime) {
+	time_t ltime;
+	struct tm result;
+	long ms;
+	struct timespec spec;
+	char parte_milisecundos[50];
+
+	ltime = time(NULL );
+
+	localtime_r(&ltime, &result);
+	asctime_r(&result, stime);
+
+	*(stime + strlen(stime) - 1) = ' ';
+
+	current_utc_time(&spec);
+	ms = round(spec.tv_nsec / 1.0e3);
+	sprintf(parte_milisecundos, "%ld", ms);
+	strcat(stime, parte_milisecundos);
+}
+
+void current_utc_time(struct timespec *ts) {
+
+#ifdef __MACH__
+	clock_serv_t cclock;
+	mach_timespec_t mts;
+	host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+	clock_get_time(cclock, &mts);
+	mach_port_deallocate(mach_task_self(), cclock);
+	ts->tv_sec = mts.tv_sec;
+	ts->tv_nsec = mts.tv_nsec;
+#else
+	clock_gettime(CLOCK_REALTIME, ts);
+#endif
+
+}
+
