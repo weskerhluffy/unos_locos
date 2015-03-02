@@ -84,7 +84,7 @@ END_TEST
 START_TEST( test_lee_matrix_long_stdin) {
 
 	const char EOT[] = { 4, '\0' };
-/*  XXX: http://cboard.cprogramming.com/c-programming/113489-initializing-2d-array-c.html */
+	/*  XXX: http://cboard.cprogramming.com/c-programming/113489-initializing-2d-array-c.html */
 	const tipo_dato VALORES_ESPERADOS[3][3] = { { 10, 20, 30 }, { 100, 0, 0 }, {
 			1000, 2000, 0 } };
 
@@ -103,8 +103,8 @@ START_TEST( test_lee_matrix_long_stdin) {
 	char *apuntador_linea = NULL;
 	char cagada[MAX_FILAS_INPUT][TAM_MAX_LINEA] = { { '\0' } };
 
-/*  XXX: http://stackoverflow.com/questions/13274786/how-to-share-memory-between-process-fork */
-/*  XXX: https://code.google.com/p/asmjit/issues/detail?id=1 */
+	/*  XXX: http://stackoverflow.com/questions/13274786/how-to-share-memory-between-process-fork */
+	/*  XXX: https://code.google.com/p/asmjit/issues/detail?id=1 */
 	resultado_assestment = mmap(NULL, sizeof *resultado_assestment,
 			PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0);
 
@@ -140,8 +140,7 @@ START_TEST( test_lee_matrix_long_stdin) {
 
 	if (!pid) {
 		lee_matrix_long_stdin((tipo_dato *) resultados_reales, &num_filas,
-				num_columnas,
-				MAX_FILAS_INPUT, MAX_COLUMNAS_INPUT);
+				num_columnas, MAX_FILAS_INPUT, MAX_COLUMNAS_INPUT);
 
 		caca_imprime_matrix(resultados_reales, num_filas, num_columnas, 0);
 
@@ -171,39 +170,7 @@ START_TEST( test_lee_matrix_long_stdin) {
 	 */
 }
 
-END_TEST
 
-START_TEST( test_init_grapho) {
-
-	const tipo_dato VALORES[3][3] = { { 1, 2, 3 }, { 2, 1, 330 }, { 3, 1, 50 } };
-	int filas = 3;
-	int resultado = 0;
-	grafo_contexto ctx;
-
-	caca_log_debug("los valores %p", VALORES);
-
-	resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero, verdadero);
-
-	imprimir_lista_adjacencia(ctx.inicio);
-	zlog_fini();
-
-	ck_assert_msg(resultado, "todo en orden %d", resultado);
-}
-
-END_TEST
-
-START_TEST( test_apuntador_arreglo) {
-
-	const tipo_dato VALORES[3][3] = { { 10, 20, 30 }, { 100, 200, 300 }, { 1000,
-			2000, 3000 } };
-	void *ptr = NULL;
-
-	ptr = (void *) VALORES;
-
-	zlog_fini();
-
-	ck_assert_msg(!from_stack(ptr), "El valor %p no es apuntador valido", ptr);
-}
 END_TEST
 
 START_TEST( test_apuntador_allocado) {
@@ -258,37 +225,6 @@ START_TEST( test_imprime_array) {
 }
 END_TEST
 
-START_TEST( test_init_grapho_busq_bin) {
-
-	const tipo_dato VALORES[12][3] =
-			{ { 1, 2, 66 }, { 2, 8, 330 }, { 3, 1, 50 }, { 1, 4, 3 },
-					{ 4, 2, 8 }, { 2, 9, 74 }, { 1, 5, 90 }, { 1, 6, 12 }, { 1,
-							7, 83 }, { 8, 3, 45 }, { 8, 5, 5 }, { 5, 7, 53 } };
-	/*
-	 * 1 8=====D 2 3 4 5 6 7
-	 * 2 8=====D 1 8 4 9
-	 * 3 8=====D 1 8
-	 * 4 8=====D 1 2
-	 * 5 8=====D 1 8 7
-	 * 6 8=====D 1
-	 * 7 8=====D 1 5
-	 * 8 8=====D 2 3 5
-	 */
-
-	int filas = 12;
-	int resultado = 0;
-	grafo_contexto ctx;
-
-	caca_log_debug("los valores %p", VALORES);
-
-	resultado = init_grafo((void*) VALORES, filas, &ctx, verdadero, verdadero);
-
-	imprimir_lista_adjacencia(ctx.inicio);
-	zlog_fini();
-
-	ck_assert_msg(resultado, "todo en orden %d", resultado);
-}
-END_TEST
 
 START_TEST( test_init_arbol_avl) {
 
@@ -299,7 +235,7 @@ START_TEST( test_init_arbol_avl) {
 	tipo_dato valores_preorder_resultado[6] = { 0 };
 	arbol_binario_contexto ctx;
 
-	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 6, NULL);
+	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 6, NULL );
 
 	arbol_binario_colectar_datos_recorrido_preoder(ctx.raiz,
 			valores_preorder_resultado, &resultado);
@@ -325,7 +261,7 @@ START_TEST( test_borrar_arbol_binario) {
 	tipo_dato valores_preorder_resultado[4] = { 0 };
 	arbol_binario_contexto ctx;
 
-	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 7, NULL);
+	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 7, NULL );
 
 	arbol_binario_borrar_nodo(&ctx.raiz, 20);
 	arbol_binario_borrar_nodo(&ctx.raiz, 30);
@@ -355,7 +291,7 @@ START_TEST( test_borrar_arbol_avl) {
 	tipo_dato valores_preorder_resultado[8] = { 0 };
 	arbol_binario_contexto ctx;
 
-	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9, NULL);
+	arbol_avl_init(&ctx, NULL, (unsigned long *) VALORES, 9, NULL );
 
 	caca_log_debug("La secuencia inicial es:");
 	arbol_binario_recorrido_preoder(ctx.raiz);
@@ -472,7 +408,6 @@ END_TEST
 #define NUM_VALORES  9
 START_TEST( test_cola_prioridad_pop) {
 
-
 	const tipo_dato VALORES[NUM_VALORES] = { 9, 5, 10, 1, 6, 11, 0, 2, 3 };
 	const tipo_dato VALORES_FINALES_INORDER[NUM_VALORES - 2] = { 2, 3, 4, 5, 6,
 			9, 10 };
@@ -488,7 +423,7 @@ START_TEST( test_cola_prioridad_pop) {
 	caca_log_debug("empezando el año");
 
 	cola_prioridad_init(&ctx, NULL, (tipo_dato *) VALORES, NULL, NUM_VALORES,
-			NULL, NULL);
+			NULL, NULL );
 
 	referencias_directas = ctx.referencias_directas_por_indice;
 
@@ -520,7 +455,6 @@ END_TEST
 
 #define NUM_VERTICES  14
 START_TEST( test_dijkstra) {
-
 
 	const tipo_dato VERTICES[NUM_VERTICES][3] = { { 0, 1, 4 }, { 0, 7, 8 }, { 1,
 			7, 11 }, { 1, 2, 8 }, { 7, 8, 7 }, { 7, 6, 1 }, { 2, 8, 2 }, { 8, 6,
@@ -561,263 +495,7 @@ START_TEST( test_dijkstra) {
 
 END_TEST
 
-START_TEST( test_grafo_copia_profunda) {
 
-	const tipo_dato VALORES[12][3] = {
-
-	{ 1, 2, 66 },
-
-	{ 2, 8, 330 },
-
-	{ 3, 1, 50 },
-
-	{ 1, 4, 3 },
-
-	{ 4, 2, 8 },
-
-	{ 2, 9, 74 },
-
-	{ 1, 5, 90 },
-
-	{ 1, 6, 12 },
-
-	{ 1, 7, 83 },
-
-	{ 8, 3, 45 },
-
-	{ 8, 5, 5 },
-
-	{ 5, 7, 53 }
-
-	};
-
-	const tipo_dato VALORES_ESPERADOS[18][8] = {
-
-	{ 1, 2, 3, 4, 5, 6, 7 },
-
-	{ 1, 4, 6, 3, 2, 7, 5 },
-
-	{ 2, 1, 4, 8, 9 },
-
-	{ 2, 4, 1, 9, 8 },
-
-	{ 3, 1, 8 },
-
-	{ 3, 8, 1 },
-
-	{ 4, 1, 2 },
-
-	{ 4, 1, 2 },
-
-	{ 5, 1, 7, 8 },
-
-	{ 5, 8, 7, 1 },
-
-	{ 6, 1 },
-
-	{ 6, 1 },
-
-	{ 7, 1, 5 },
-
-	{ 7, 5, 1 },
-
-	{ 8, 2, 3, 5 },
-
-	{ 8, 5, 3, 2 },
-
-	{ 9, 2 },
-
-	{ 9, 2 }
-
-	};
-	/*
-	 * Coneectividad
-	 *
-	 * 1 8=====D 2 3 4 5 6 7
-	 * 2 8=====D 1 8 4 9
-	 * 3 8=====D 1 8
-	 * 4 8=====D 1 2
-	 * 5 8=====D 1 8 7
-	 * 6 8=====D 1
-	 * 7 8=====D 1 5
-	 * 8 8=====D 2 3 5
-	 * 9 8=====D 2
-	 */
-
-	char *buffer = NULL;
-	tipo_dato matrix_ordenada[18][8] = { { 0 } };
-
-	int filas = 12;
-	int resultado = 0;
-	grafo_contexto ctx_origen;
-	grafo_contexto ctx_destino;
-
-	buffer = calloc(1000, sizeof(char));
-
-	resultado = init_grafo((void*) VALORES, filas, &ctx_origen, verdadero,
-			verdadero);
-
-	caca_log_debug("el grafo original antes de ser copiado");
-	imprimir_lista_adjacencia(ctx_origen.inicio);
-
-	grafo_copia_profunda(&ctx_origen, &ctx_destino, NULL, 0);
-
-	caca_log_debug("el grafo original");
-	imprimir_lista_adjacencia(ctx_origen.inicio);
-	caca_log_debug("la copia, con inicio %p", ctx_destino.inicio);
-	imprimir_lista_adjacencia(ctx_destino.inicio);
-	grafo_get_representacion_en_matriz_ordenada(&ctx_destino, matrix_ordenada,
-			8);
-
-	caca_log_debug("alojaaaaa");
-	resultado = !memcmp(matrix_ordenada, VALORES_ESPERADOS,
-			sizeof(VALORES_ESPERADOS));
-/* 	caca_imprime_matrix(VALORES_ESPERADOS, 18, NULL, 8); */
-	caca_log_debug("la matrix como arreglo %s, de tama %d",
-			caca_arreglo_a_cadena((tipo_dato *)VALORES_ESPERADOS, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
-			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
-	caca_log_debug("mierdaaaa");
-/* 	caca_imprime_matrix(matrix_ordenada, 18, NULL, 8); */
-	caca_log_debug("la matrix copiada como arreglo %s, de tama %d",
-			caca_arreglo_a_cadena((tipo_dato *)matrix_ordenada, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
-			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
-
-	caca_log_debug("termino esta mierda");
-/* 	zlog_fini(); */
-
-	ck_assert_msg(resultado, "todo en orden %d", resultado);
-
-}
-END_TEST
-
-START_TEST( test_grafo_copia_profunda_lista_ignorar) {
-
-	const tipo_dato VALORES[12][3] = {
-
-	{ 1, 2, 66 },
-
-	{ 2, 8, 330 },
-
-	{ 3, 1, 50 },
-
-	{ 1, 4, 3 },
-
-	{ 4, 2, 8 },
-
-	{ 2, 9, 74 },
-
-	{ 1, 5, 90 },
-
-	{ 1, 6, 12 },
-
-	{ 1, 7, 83 },
-
-	{ 8, 3, 45 },
-
-	{ 8, 5, 5 },
-
-	{ 5, 7, 53 }
-
-	};
-
-	const tipo_dato VALORES_ESPERADOS[18][8] = {
-
-	{ 1, 2, 3, 5, 6, 7 },
-
-	{ 1, 6, 3, 2, 7, 5 },
-
-	{ 2, 1, 8 },
-
-	{ 2, 1, 8 },
-
-	{ 3, 1, 8 },
-
-	{ 3, 8, 1 },
-
-	{ 5, 1, 7, 8 },
-
-	{ 5, 8, 7, 1 },
-
-	{ 6, 1 },
-
-	{ 6, 1 },
-
-	{ 7, 1, 5 },
-
-	{ 7, 5, 1 },
-
-	{ 8, 2, 3, 5 },
-
-	{ 8, 5, 3, 2 }
-
-	};
-	/*
-	 * Coneectividad
-	 *
-	 * 1 8=====D 2 3 4 5 6 7
-	 * 2 8=====D 1 8 4 9
-	 * 3 8=====D 1 8
-	 * 4 8=====D 1 2
-	 * 5 8=====D 1 8 7
-	 * 6 8=====D 1
-	 * 7 8=====D 1 5
-	 * 8 8=====D 2 3 5
-	 * 9 8=====D 2
-	 */
-
-	int filas = 12;
-	int resultado = 0;
-	char *buffer = NULL;
-	tipo_dato lista_exclusion[2] = { 4, 9 };
-	tipo_dato matrix_ordenada[18][8] = { { 0 } };
-
-	grafo_contexto ctx_origen;
-	grafo_contexto ctx_destino;
-
-	buffer = calloc(1000, sizeof(char));
-
-	resultado = init_grafo((void*) VALORES, filas, &ctx_origen, verdadero,
-			verdadero);
-
-	caca_log_debug("el grafo original antes de ser copiado");
-	imprimir_lista_adjacencia(ctx_origen.inicio);
-
-	grafo_copia_profunda(&ctx_origen, &ctx_destino, lista_exclusion,
-			sizeof(lista_exclusion) / sizeof(tipo_dato));
-
-	/*
-	 while (mierda) {
-	 sleep(10);
-	 }
-	 */
-
-	caca_log_debug("el grafo original");
-	imprimir_lista_adjacencia(ctx_origen.inicio);
-	caca_log_debug("la copia, con inicio %p", ctx_destino.inicio);
-
-	imprimir_lista_adjacencia(ctx_destino.inicio);
-	grafo_get_representacion_en_matriz_ordenada(&ctx_destino, matrix_ordenada,
-			8);
-
-	caca_log_debug("alojaaaaa");
-	resultado = !memcmp(matrix_ordenada, VALORES_ESPERADOS,
-			sizeof(VALORES_ESPERADOS));
-/* 	caca_imprime_matrix(VALORES_ESPERADOS, 18, NULL, 8); */
-	caca_log_debug("la matrix como arreglo %s, de tama %d",
-			caca_arreglo_a_cadena((tipo_dato *)VALORES_ESPERADOS, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
-			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
-	caca_log_debug("mierdaaaa");
-/* 	caca_imprime_matrix(matrix_ordenada, 18, NULL, 8); */
-	caca_log_debug("la matrix copiada como arreglo %s, de tama %d",
-			caca_arreglo_a_cadena((tipo_dato *)matrix_ordenada, sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato), buffer),
-			sizeof(VALORES_ESPERADOS)/sizeof(tipo_dato));
-
-	zlog_fini();
-
-	ck_assert_msg(resultado, "todo en orden %s", resultado);
-
-}
-END_TEST
 
 Suite *
 cacacomun_suite(void) {
@@ -830,12 +508,9 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_lee_matrix_long_stdin);
 	tcase_add_test(tc_core, test_lee_matrix);
 	tcase_add_test(tc_core, test_lee_matrix_stdin);
-	tcase_add_test(tc_core, test_apuntador_arreglo);
 	tcase_add_test(tc_core, test_apuntador_allocado);
 	tcase_add_test(tc_core, test_imprime_apuntador);
 	tcase_add_test(tc_core, test_imprime_array);
-	tcase_add_test(tc_core, test_init_grapho);
-	tcase_add_test(tc_core, test_init_grapho_busq_bin);
 	tcase_add_test(tc_core, test_init_arbol_avl);
 	tcase_add_test(tc_core, test_borrar_arbol_binario);
 	tcase_add_test(tc_core, test_borrar_arbol_avl);
@@ -843,8 +518,6 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_dijkstra_modificar_valor_nodo);
 	tcase_add_test(tc_core, test_cola_prioridad_pop);
 	tcase_add_test(tc_core, test_dijkstra);
-	tcase_add_test(tc_core, test_grafo_copia_profunda);
-	tcase_add_test(tc_core, test_grafo_copia_profunda_lista_ignorar);
 	/*
 	 */
 	/*

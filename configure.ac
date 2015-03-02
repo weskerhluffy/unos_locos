@@ -72,6 +72,6 @@ AC_CONFIG_FILES([Makefile
 AC_CHECK_FUNCS([backtrace],[],[AC_DEFINE([backtrace(a,b)], [a-a],
                                [Era tan linda...])] )
                                
-AC_CHECK_FUNCS([va_copy],[],[AC_DEFINE([va_copy], [__builtin_va_copy], [Mas linda q una stresha...])] ) 
+#AC_CHECK_FUNCS([va_copy],[],[AC_DEFINE([va_copy], [__builtin_va_copy], [Mas linda q una stresha...])] ) 
                                
 AC_OUTPUT

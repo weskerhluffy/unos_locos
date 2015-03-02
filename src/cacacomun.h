@@ -45,6 +45,7 @@
 #define ARBOL_AVL_VALOR_INVALIDO -1
 #define COLA_PRIORIDAD_VALOR_INVALIDO -1
 #define DIJKSTRA_VALOR_INVALIDO -1
+#define GRAFO_VALOR_INVALIDO -1
 
 #define MAX_VALOR (tipo_dato) (2<<28)
 
@@ -183,7 +184,6 @@ typedef enum BOOLEANOS {
 			size_t profundidad = 0; \
 			void *array[MAX_TAM_CADENA]; \
  			profundidad = backtrace(array, MAX_TAM_CADENA); \
-			caca_log_debug_func(formato,__FILE__, __func__, __LINE__,profundidad,##args); \
 		} \
 		while(0);
 
@@ -224,8 +224,8 @@ typedef enum BOOLEANOS {
 	(nodo)->indice=nuevo_valor
 
 /*
-XXX: http://www.programiz.com/c-programming/c-enumeration
-*/
+ XXX: http://www.programiz.com/c-programming/c-enumeration
+ */
 #undef  ADDITEM
 #define ADDITEM( criterio_ordenacion, comentario) criterio_ordenacion
 typedef enum GRAFO_CRITERIOS_ORDENACION {
@@ -270,6 +270,7 @@ typedef struct nodo_arbol_binario {
 typedef struct grifo_contexto {
 	int localidades_usadas;
 	nodo *inicio;
+	nodo *final;
 	nodo nodos_disponibles[MAX_NODOS];
 	tipo_dato matrix_distancias[MAX_COLUMNAS_NODOS][MAX_FILAS_NODOS];
 	nodo *referencias_nodos_por_indice[MAX_FILAS_NODOS];
@@ -297,13 +298,13 @@ bool zlog_inicializado;
 const char* GRAFO_NOMBRES_CRITERIOS_ORDENACION[GRAFO_PRINCIPAL + 1];
 
 int lee_matriz_int_archivo(const char * nombre_archivo,
-tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT], int *filas);
+		tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT], int *filas);
 
 int lee_matriz_long_stdin(tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT],
 		int *filas);
 
 int mierda(const char * nombre_archivo,
-tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT], int *filas) ;
+		tipo_dato matrix[MAX_COLUMNAS_INPUT][MAX_FILAS_INPUT], int *filas);
 
 /* XXX: http://stackoverflow.com/questions/5724171/passing-an-array-by-reference */
 /**
@@ -340,10 +341,7 @@ GRAFO_TIPO_RESULTADO_BUSQUEDA busqueda_binaria_recursiva(nodo *inicio,
 
 void init_zlog(const char *arch_conf);
 
-static  char *grafo_nodo_a_cadena(nodo *node, char *cadena_buffer,
-		int *characteres_escritos);
-
-static  int grafo_comparar_nodos(nodo *nodo1, nodo *nodo2,
+int grafo_comparar_nodos(nodo *nodo1, nodo *nodo2,
 		GRAFO_CRITERIOS_ORDENACION criterio_busqueda);
 
 void caca_log_debug_func(const char *format, ...);
@@ -362,47 +360,38 @@ void grafo_anadir_nodo(nodo *nodo_inicial, nodo *nodo_a_anadir,
 
 void imprimir_lista_adjacencia(nodo *nodo_inicial);
 
-static  int *grafo_apuntador_num_nodos_asociados(nodo *nodo,
-		GRAFO_CRITERIOS_ORDENACION criterio_busqueda);
-
 void arbol_avl_init(arbol_binario_contexto *ctx, tipo_dato *indices,
-tipo_dato *datos, int num_datos, nodo_arbol_binario **arreglo_referencias_nodos);
+		tipo_dato *datos, int num_datos,
+		nodo_arbol_binario **arreglo_referencias_nodos);
 
 #define ARBOL_AVL_ALTURA_CARGADA_IZQ -1
 #define ARBOL_AVL_ALTURA_CARGADA_DER 1
 #define ARBOL_AVL_ALTURA_BALANCEADA 0
 
-static  int arbol_avl_diferencia_alturas_subarboles(
-		nodo_arbol_binario *nodo, int tolerancia,
-		bool considerar_balanceado_cargado_der);
-
-static  char *arbol_binario_nodo_a_cadena(nodo_arbol_binario *node,
-		char *cadena_buffer, int *characteres_escritos);
-
-static  nodo_arbol_binario *arbol_binario_nodo_allocar(
-		arbol_binario_contexto *ctx, int localidades_solicitadas);
+nodo_arbol_binario *arbol_binario_nodo_allocar(arbol_binario_contexto *ctx,
+		int localidades_solicitadas);
 
 void arbol_binario_recorrido_preoder(nodo_arbol_binario *raiz);
 
 void arbol_binario_colectar_datos_recorrido_preoder(nodo_arbol_binario *raiz,
-tipo_dato *datos_ordenados, int *num_datos_colectados);
+		tipo_dato *datos_ordenados, int *num_datos_colectados);
 
 void arbol_avl_insertar(nodo_arbol_binario **raiz,
 		nodo_arbol_binario *nodo_a_insertar, bool no_indices_repetidos);
 
-static  int arbol_avl_compara_nodos(nodo_arbol_binario *nodo1,
+int arbol_avl_compara_nodos(nodo_arbol_binario *nodo1,
 		nodo_arbol_binario *nodo2);
 
-static  int caca_int_max(int a, int b);
+int caca_int_max(int a, int b);
 
-static  void arbol_binario_rotar_izq(nodo_arbol_binario **nodo);
-static  void arbol_binario_rotar_der(nodo_arbol_binario **nodo);
+void arbol_binario_rotar_izq(nodo_arbol_binario **nodo);
+void arbol_binario_rotar_der(nodo_arbol_binario **nodo);
 
 void arbol_binario_borrar_nodo(nodo_arbol_binario **raiz,
-tipo_dato valor_a_borrar);
+		tipo_dato valor_a_borrar);
 
 void arbol_binario_colectar_datos_recorrido_inoder(nodo_arbol_binario *raiz,
-tipo_dato *datos_ordenados, int *num_datos_colectados);
+		tipo_dato *datos_ordenados, int *num_datos_colectados);
 
 void arbol_binario_recorrido_inoder(nodo_arbol_binario *raiz);
 
@@ -412,11 +401,11 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario **raiz,
 		nodo_arbol_binario *nodo_a_borrar);
 
 void cola_prioridad_modificar_valor_nodo(cola_prioridad_contexto *cpctx,
-tipo_dato indice, tipo_dato nuevo_valor);
+		tipo_dato indice, tipo_dato nuevo_valor);
 
 void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
-tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
-tipo_dato *antecesores);
+		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
+		tipo_dato *antecesores);
 
 void cola_prioridad_init(cola_prioridad_contexto *ctx,
 		nodo_cola_prioridad *nodos, tipo_dato *valores, tipo_dato *indices,
@@ -424,7 +413,7 @@ void cola_prioridad_init(cola_prioridad_contexto *ctx,
 		nodo_arbol_binario **referencias_directas);
 
 void cola_prioridad_get_valores(cola_prioridad_contexto *ctx,
-tipo_dato *valores, int *num_valores);
+		tipo_dato *valores, int *num_valores);
 
 nodo_cola_prioridad *cola_prioridad_pop(cola_prioridad_contexto *ctx);
 
@@ -433,15 +422,15 @@ bool cola_prioridad_es_vacia(cola_prioridad_contexto *ctx);
 nodo *grafo_get_nodo_origen_por_indice(grafo_contexto *ctx, tipo_dato indice);
 
 nodo *grafo_get_nodo_destino_por_indice(grafo_contexto *ctx, nodo *nodo_origen,
-tipo_dato indice);
+		tipo_dato indice);
 
 tipo_dato grafo_get_distancia_entre_nodos_por_indice(grafo_contexto *ctx,
-tipo_dato indice_origen, tipo_dato indice_destino);
+		tipo_dato indice_origen, tipo_dato indice_destino);
 
 void dijkstra_main(void *matrix_distancias, int num_filas,
-tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino, grafo_contexto *gctx,
-tipo_dato *distancias_minimas,
-tipo_dato *antecesores);
+		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
+		grafo_contexto *gctx, tipo_dato *distancias_minimas,
+		tipo_dato *antecesores);
 
 char *caca_arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer);
 
@@ -449,10 +438,10 @@ void timestamp_caca(char *stime);
 
 void current_utc_time(struct timespec *ts);
 
-static  void grafo_copia_nodo(const nodo *nodo_origen, nodo *nodo_destino);
+void grafo_copia_nodo(const nodo *nodo_origen, nodo *nodo_destino);
 
-static  bool caca_arreglo_contiene(tipo_dato *arreglo, int tam_arreglo,
-tipo_dato valor_buscado);
+bool caca_arreglo_contiene(tipo_dato *arreglo, int tam_arreglo,
+		tipo_dato valor_buscado);
 
 void grafo_get_representacion_en_matriz_ordenada(grafo_contexto *ctx,
 		void *matrix, int num_columnas);
@@ -461,12 +450,17 @@ void grafo_copia_profunda(const grafo_contexto *ctx_origen,
 		grafo_contexto *ctx_destino, tipo_dato *indices_a_ignorar,
 		int tam_indices_a_ignorar);
 
-static  void caca_inutiliza_nodo_cola_prioridad(
-		nodo_cola_prioridad *nodos, int num_nodos);
+void caca_inutiliza_nodo_cola_prioridad(nodo_cola_prioridad *nodos,
+		int num_nodos);
 
 char *caca_arreglo_a_cadena_float(float *arreglo, int tam_arreglo, char *buffer);
 
 void caca_realinea_array(tipo_dato *arreglo, int num_filas,
 		int alineacion_actual, int alineacion_nueva);
+
+int arbol_avl_diferencia_alturas_subarboles(nodo_arbol_binario *nodo,
+		int tolerancia, bool considerar_balanceado_cargado_der);
+char *grafo_nodo_a_cadena(nodo *node, char *cadena_buffer,
+		int *characteres_escritos);
 
 #endif /* CACACOMUN_H_ */
