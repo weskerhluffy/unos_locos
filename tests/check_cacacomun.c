@@ -332,7 +332,7 @@ START_TEST( test_borrar_arbol_avl_ref_dir) {
 	caca_log_debug("borrando nodo %ld",
 			ARBOL_AVL_GET_VALOR(*(referencias_directas + 7)));
 
-	arbol_avl_borrar_referencia_directa(&ctx.raiz, *(referencias_directas + 7));
+	arbol_avl_borrar_referencia_directa(&ctx.raiz, *(referencias_directas + 7),NULL);
 
 	arbol_binario_colectar_datos_recorrido_inoder(ctx.raiz,
 			valores_preorder_resultado, &resultado);

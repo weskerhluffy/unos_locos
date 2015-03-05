@@ -377,7 +377,7 @@ void arbol_binario_recorrido_inoder(nodo_arbol_binario *raiz);
 void arbol_avl_borrar(nodo_arbol_binario **raiz, tipo_dato valor_a_borrar);
 
 void arbol_avl_borrar_referencia_directa(nodo_arbol_binario **raiz,
-		nodo_arbol_binario *nodo_a_borrar);
+		nodo_arbol_binario *nodo_a_borrar,nodo_arbol_binario *tope);
 
 void cola_prioridad_modificar_valor_nodo(cola_prioridad_contexto *cpctx,
 		tipo_dato indice, tipo_dato nuevo_valor);
@@ -440,6 +440,9 @@ void caca_realinea_array(tipo_dato *arreglo, int num_filas,
 int arbol_avl_diferencia_alturas_subarboles(nodo_arbol_binario *nodo,
 		int tolerancia, bool considerar_balanceado_cargado_der);
 char *grafo_nodo_a_cadena(nodo *node, char *cadena_buffer,
+		int *characteres_escritos);
+
+char *arbol_binario_nodo_a_cadena(nodo_arbol_binario *node, char *cadena_buffer,
 		int *characteres_escritos);
 
 #endif /* CACACOMUN_H_ */
