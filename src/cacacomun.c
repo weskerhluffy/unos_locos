@@ -67,6 +67,7 @@ int lee_matrix_long_stdin(tipo_dato *matrix, int *num_filas, int *num_columnas,
 
 int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 		bool usar_hashes, bool relaciones_bidireccionales) {
+	int i;
 	int contador_nodos = 0;
 	tipo_dato indice_origen_actual = 0;
 	tipo_dato indice_destino_actual = 0;
@@ -82,7 +83,7 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 	matrix_distancias = (tipo_dato *) ctx->matrix_distancias;
 	memset(matrix_distancias, GRAFO_VALOR_INVALIDO,
 			sizeof(ctx->matrix_distancias));
-	for (int i = 0; i < num_filas; i++) {
+	for (i = 0; i < num_filas; i++) {
 		indice_origen_actual = *(matrix_int + i * 3 + GRAFO_NODO_ORIGEN);
 		indice_destino_actual = *(matrix_int + i * 3 + GRAFO_NODO_DESTINO);
 		distancia_actual = *(matrix_int + i * 3 + GRAFO_DISTANCIA_ENTRE_NODOS);
@@ -93,6 +94,9 @@ int init_grafo(void *matrix, int num_filas, grafo_contexto *ctx,
 				*(matrix_distancias + indice_origen_actual * MAX_COLUMNAS_NODOS + indice_destino_actual),
 				indice_origen_actual, indice_destino_actual);
 		if (relaciones_bidireccionales) {
+			caca_log_debug("dando d alta tambien reciproco %ld en %ld,%ld",
+					distancia_actual, indice_destino_actual,
+					indice_origen_actual);
 			*(matrix_distancias + indice_destino_actual * MAX_COLUMNAS_NODOS
 					+ indice_origen_actual) = distancia_actual;
 		}
@@ -209,7 +213,10 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 
 	switch (arbol_avl_compara_nodos(raiz_int, nodo_a_insertar)) {
 	case CACA_COMPARACION_IZQ_MENOR:
+		caca_log_debug("cagado a la izq")
+		;
 		if (raiz_int->hijo_der) {
+			caca_log_debug("subcagado a la der");
 			arbol_avl_insertar(&raiz_int->hijo_der, nodo_a_insertar,
 					no_indices_repetidos);
 		} else {
@@ -218,7 +225,10 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 		}
 		break;
 	case CACA_COMPARACION_IZQ_MAYOR:
+		caca_log_debug("cagado a la izq")
+		;
 		if (raiz_int->hijo_izq) {
+			caca_log_debug("subcagado a la der");
 			arbol_avl_insertar(&raiz_int->hijo_izq, nodo_a_insertar,
 					no_indices_repetidos);
 		} else {
@@ -273,7 +283,6 @@ void arbol_avl_insertar(nodo_arbol_binario **raiz,
 
 	caca_log_debug("Al finalizar insercion de %ld",
 			ARBOL_AVL_GET_INDICE(nodo_a_insertar));
-	arbol_binario_recorrido_preoder(*raiz);
 }
 
 int arbol_avl_compara_nodos(nodo_arbol_binario *nodo1,
@@ -304,7 +313,8 @@ void arbol_binario_rotar_izq(nodo_arbol_binario **nodo) {
 	hijo_der = nodo_int->hijo_der;
 	caca_log_debug("hijo der %ld %p", ARBOL_AVL_GET_INDICE(hijo_der), hijo_der);
 	hijo_der_subarbol_izq = hijo_der->hijo_izq;
-	caca_log_debug("hijo der sub izq %ld %p", ARBOL_AVL_GET_INDICE(hijo_der_subarbol_izq), hijo_der_subarbol_izq);
+	caca_log_debug("hijo der sub izq %ld %p",
+			ARBOL_AVL_GET_INDICE(hijo_der_subarbol_izq), hijo_der_subarbol_izq);
 
 	nodo_int->hijo_der = hijo_der_subarbol_izq;
 	hijo_der->hijo_izq = nodo_int;
@@ -604,44 +614,22 @@ void arbol_avl_borrar_referencia_directa(nodo_arbol_binario **raiz,
 void cola_prioridad_modificar_valor_nodo(cola_prioridad_contexto *cpctx,
 		tipo_dato indice, tipo_dato nuevo_valor) {
 	nodo_arbol_binario *referencia_directa = NULL;
-	nodo_arbol_binario *nuevo_nodo = NULL;
 	nodo_arbol_binario **referencias_directas = NULL;
-	nodo_arbol_binario **raiz = NULL;
 
 	referencias_directas = cpctx->referencias_directas_por_indice;
-	raiz = &cpctx->actx->raiz;
 
 	referencia_directa = *(referencias_directas + indice);
-
-	caca_log_debug("el arbol antes de modificar");
-	arbol_binario_recorrido_inoder(cpctx->actx->raiz);
 
 	caca_log_debug("borrando x ref dir %ld %ld",
 			ARBOL_AVL_GET_INDICE(referencia_directa),
 			ARBOL_AVL_GET_VALOR(referencia_directa));
-	arbol_avl_borrar_referencia_directa(&cpctx->actx->raiz, referencia_directa,
-			NULL );
+	referencia_directa->valor = nuevo_valor;
 
-	caca_log_debug("el arbol despues de borrar");
-	arbol_binario_recorrido_inoder(cpctx->actx->raiz);
-
-	nuevo_nodo = arbol_binario_nodo_allocar(cpctx->actx, 1);
-	memset(nuevo_nodo, 0, sizeof(nodo_arbol_binario));
-	nuevo_nodo->indice = indice;
-	nuevo_nodo->valor = nuevo_valor;
-
-	caca_log_debug("reinsertando %ld %ld", ARBOL_AVL_GET_INDICE(nuevo_nodo),
-			ARBOL_AVL_GET_VALOR(nuevo_nodo));
-	arbol_avl_insertar(raiz, nuevo_nodo, falso);
-	caca_log_debug("finalmente el arbol kedo");
-	arbol_binario_recorrido_inoder(cpctx->actx->raiz);
-
-	*(referencias_directas + indice) = nuevo_nodo;
 }
 
 void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
 		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
-		tipo_dato *antecesores) {
+		tipo_dato *antecesores, nodo_cola_prioridad *nodo_origen) {
 	tipo_dato dist_origen_dest = 0;
 
 	tipo_dato *matrix_distancias = NULL;
@@ -659,6 +647,9 @@ void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
 	distancias_minimas = cpctx->referencias_directas_por_indice;
 
 	distancia_min_origen = *(distancias_minimas + ind_nodo_origen);
+	if (nodo_origen) {
+		distancia_min_origen = nodo_origen;
+	}
 	distancia_min_destino = *(distancias_minimas + ind_nodo_destino);
 
 	if (distancia_min_destino->valor
@@ -678,6 +669,8 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 		grafo_contexto *gctx, tipo_dato *distancias_minimas,
 		tipo_dato *antecesores) {
 
+	int i, j;
+
 	int contador = 0;
 	int num_nodos = 0;
 
@@ -696,6 +689,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 
 	bool nodos_distancias_minimas_calculadas[MAX_NODOS] = { falso };
 	nodo_cola_prioridad distancias_minimas_nodos[MAX_NODOS];
+	nodo_cola_prioridad *distancias_minimas_nodos_calculadas[MAX_NODOS];
 
 	caca_log_debug("fairy tail\n");
 
@@ -742,8 +736,6 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 	caca_log_debug("antes de niciar cola\n");
 	cola_prioridad_init(&cpctx, distancias_minimas_nodos, NULL, NULL,
 			max_indice + 1, NULL, NULL );
-	caca_log_debug("la cola kedo::");
-	arbol_binario_recorrido_preoder(cpctx.actx->raiz);
 	caca_log_debug("empezando algoritmo");
 
 	contador = 0;
@@ -751,11 +743,13 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 		nodo_mas_cercas = cola_prioridad_pop(&cpctx);
 		nodos_distancias_minimas_calculadas[nodo_mas_cercas->indice] =
 				verdadero;
+		*(distancias_minimas_nodos_calculadas + nodo_mas_cercas->indice) =
+				nodo_mas_cercas;
 
 		indice_origen_actual = nodo_mas_cercas->indice;
 		caca_log_debug("tratando origen %ld\n", indice_origen_actual);
 
-		for (int j = 0; j < MAX_COLUMNAS_NODOS; j++) {
+		for (j = 0; j < MAX_COLUMNAS_NODOS; j++) {
 			distancia_actual = (tipo_dato) *(matrix_distancias_int
 					+ indice_origen_actual * MAX_FILAS_NODOS + j);
 			indice_destino_actual = j;
@@ -765,7 +759,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 				caca_log_debug("relaxando destino %ld distancia %ld\n",
 						indice_destino_actual, distancia_actual);
 				dijkstra_relaxar_nodo(gctx_int, &cpctx, indice_origen_actual,
-						indice_destino_actual, antecesores);
+						indice_destino_actual, antecesores, nodo_mas_cercas);
 			}
 		}
 
@@ -773,12 +767,12 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 	}
 	caca_log_debug("calculadas chingaderas\n");
 	*(antecesores + ind_nodo_origen) = 0;
-	for (int i = 0; i < max_indice + 1; i++) {
+	for (i = 0; i < max_indice + 1; i++) {
 		*(distancias_minimas + i) =
 				i == ind_nodo_origen ? 0 :
 				caca_apuntador_valido(
-						(*(cpctx.referencias_directas_por_indice + i))) ?
-						(*(cpctx.referencias_directas_por_indice + i))->valor :
+						(*(distancias_minimas_nodos_calculadas + i))) ?
+						(*(distancias_minimas_nodos_calculadas + i))->valor :
 						COLA_PRIORIDAD_VALOR_INVALIDO;
 	}
 	caca_log_debug("saliendo de la mierda \n");
@@ -789,88 +783,158 @@ void cola_prioridad_init(cola_prioridad_contexto *ctx,
 		nodo_cola_prioridad *nodos, tipo_dato *valores, tipo_dato *indices,
 		int num_nodos, arbol_binario_contexto *actx,
 		nodo_arbol_binario **referencias_directas) {
-	tipo_dato indices_int[MAX_NODOS] = { ARBOL_AVL_INDICE_INVALIDO };
-	tipo_dato datos[MAX_NODOS] = { ARBOL_AVL_INDICE_INVALIDO };
+	int i;
+	int num_nodos_int = 0;
+	nodo_cola_prioridad **nodos_int = NULL;
 
 	memset(ctx, 0, sizeof(cola_prioridad_contexto));
 	memset(ctx->referencias_directas_por_indice_mem, 0,
 			sizeof(ctx->referencias_directas_por_indice_mem));
-	memset(indices_int, COLA_PRIORIDAD_VALOR_INVALIDO, sizeof(indices_int));
-	memset(datos, COLA_PRIORIDAD_VALOR_INVALIDO, sizeof(datos));
+	nodos_int =
+			(nodo_cola_prioridad **) &ctx->referencias_directas_por_indice_mem;
 
 	if (actx) {
 		if (!referencias_directas) {
 			perror("se paso un contexto de arbol sin referencias directas");
 			exit(1);
 		}
-		ctx->actx = actx;
 		ctx->referencias_directas_por_indice = referencias_directas;
+		num_nodos_int = num_nodos;
 	} else {
-		for (int i = 0; i < num_nodos; i++) {
+		for (i = 0; i < num_nodos; i++) {
 			if (nodos) {
 				if ((nodos + i)->indice == COLA_PRIORIDAD_VALOR_INVALIDO) {
 					continue;
 				}
-				*(indices_int + i) = (nodos + i)->indice;
-				*(datos + i) = (nodos + i)->valor;
+				*(nodos_int + ARBOL_AVL_GET_INDICE((nodos + i))) = (nodos + i);
 				caca_log_debug("indice %ld valor %ld con nodos provistos",
-						*(indices_int + i), *(datos + i));
+						ARBOL_AVL_GET_INDICE(*(nodos_int + (nodos + i)->indice)),
+						ARBOL_AVL_GET_VALOR(*(nodos_int + (nodos + i)->indice)));
 			} else {
 				if (!valores) {
 					perror("no se proporcionaron nodos ni valores");
 					exit(1);
 				}
 				if (indices) {
-					*(indices_int + i) = *(indices + i);
+					*(nodos_int + *(indices + i)) = calloc(1,
+							sizeof(nodo_cola_prioridad));
+					if (!*(nodos_int + *(indices + i))) {
+						perror(
+								"No se pudo obtener mem para nodo cp nuevo con indices");
+					}
+					COLA_PRIORIDAD_ASIGNA_VALOR(*(nodos_int + *(indices + i)),
+							*(valores + i));
+					COLA_PRIORIDAD_ASIGNA_INDICE(*(nodos_int + *(indices + i)),
+							*(indices + i));
+					caca_log_debug(
+							"indice %ld valor %ld con nodos no provistos",
+							ARBOL_AVL_GET_INDICE(*(nodos_int +*(indices+i) )),
+							ARBOL_AVL_GET_VALOR(*(nodos_int +*(indices+i) )));
 				} else {
-					*(indices_int + i) = i + 1;
+					*(nodos_int + i + 1) = calloc(1,
+							sizeof(nodo_cola_prioridad));
+					if (!*(nodos_int + i + 1)) {
+						perror(
+								"No se pudo obtener mem para nodo cp nuevo sin indices");
+					}
+					COLA_PRIORIDAD_ASIGNA_VALOR(*(nodos_int + i + 1),
+							*(valores + i));
+					COLA_PRIORIDAD_ASIGNA_INDICE(*(nodos_int + i + 1), i + 1);
+					caca_log_debug(
+							"indice %ld valor %ld con nodos ni indices no provistos",
+							ARBOL_AVL_GET_INDICE(*(nodos_int + i + 1)),
+							ARBOL_AVL_GET_VALOR(*(nodos_int + i + 1)));
 				}
-				*(datos + i) = *(valores + i);
-				caca_log_debug("indice %ld valor %ld con nodos  no provistos",
-						*(indices_int + i), *(datos + i));
 			}
+			num_nodos_int++;
 		}
 
-		ctx->actx = &ctx->actx_mem;
 		ctx->referencias_directas_por_indice =
 				ctx->referencias_directas_por_indice_mem;
+		ctx->num_nodos = num_nodos_int;
 
-		caca_log_debug("llamando a inicializacion arbol avl");
-		arbol_avl_init(ctx->actx, indices_int, datos, num_nodos,
-				ctx->referencias_directas_por_indice);
 	}
 
 }
 
 nodo_cola_prioridad *cola_prioridad_pop(cola_prioridad_contexto *ctx) {
-	nodo_arbol_binario *nodo_actual = NULL;
-	nodo_arbol_binario *nodo_anterior = NULL;
+	bool alguno_no_es_maximo = falso;
+	int i = 0;
+	tipo_dato indice_min = 0;
+	tipo_dato valor_min = MAX_VALOR;
+	nodo_cola_prioridad *nodo_encontrado = NULL;
+	nodo_cola_prioridad *primer_nodo_no_vacio = NULL;
 
-	nodo_actual = ctx->actx->raiz;
-
-	while (nodo_actual) {
-		nodo_anterior = nodo_actual;
-		nodo_actual = nodo_actual->hijo_izq;
+	for (i = 0; i < MAX_NODOS; i++) {
+		nodo_encontrado = *(ctx->referencias_directas_por_indice + i);
+		if (nodo_encontrado) {
+			caca_log_debug("intentando nodo %ld %ld",
+					ARBOL_AVL_GET_INDICE(nodo_encontrado),
+					ARBOL_AVL_GET_VALOR(nodo_encontrado ));
+			if (!primer_nodo_no_vacio) {
+				primer_nodo_no_vacio = nodo_encontrado;
+			}
+			if (ARBOL_AVL_GET_VALOR(nodo_encontrado) < valor_min) {
+				valor_min = ARBOL_AVL_GET_VALOR(nodo_encontrado);
+				indice_min = ARBOL_AVL_GET_INDICE(nodo_encontrado);
+				alguno_no_es_maximo = verdadero;
+			}
+		}
 	}
 
-	arbol_avl_borrar_referencia_directa(&ctx->actx->raiz, nodo_anterior, NULL );
+	caca_log_debug("al salir del loop indice min %ld valor min %ld", indice_min,
+			valor_min);
 
-	return nodo_anterior;
+	if (indice_min < MAX_NODOS && alguno_no_es_maximo) {
+		caca_log_debug("nodo indice %ld sera borrado", indice_min);
+		nodo_encontrado = *(ctx->referencias_directas_por_indice + indice_min);
+		*(ctx->referencias_directas_por_indice + indice_min) = NULL;
+		ctx->num_nodos--;
+		caca_log_debug("aora los nodos son %d", ctx->num_nodos);
+	} else {
+		if (primer_nodo_no_vacio) {
+			caca_log_debug(
+					"x lo visto todos los nodos tienen el maximo,utilizando el primero q c encontro %ld %ld",
+					ARBOL_AVL_GET_INDICE(primer_nodo_no_vacio),
+					ARBOL_AVL_GET_INDICE(primer_nodo_no_vacio));
+			nodo_encontrado = primer_nodo_no_vacio;
+			*(ctx->referencias_directas_por_indice
+					+ ARBOL_AVL_GET_INDICE(primer_nodo_no_vacio)) = NULL;
+			ctx->num_nodos--;
+			caca_log_debug("aora los nodos son %d", ctx->num_nodos);
+		} else {
+			caca_log_debug("q pedo, intantando popear una cola vacia!?");
+		}
+	}
+
+	return nodo_encontrado;
 }
 
 void cola_prioridad_get_valores(cola_prioridad_contexto *ctx,
 		tipo_dato *valores, int *num_valores) {
-	arbol_binario_colectar_datos_recorrido_inoder(ctx->actx->raiz, valores,
-			num_valores);
+	int i;
+	int contador_nodos_validos = 0;
+	nodo_cola_prioridad *nodo_actual = NULL;
+	for (i = 0; i < MAX_NODOS; i++) {
+		nodo_actual = *(ctx->referencias_directas_por_indice + i);
+		if (nodo_actual) {
+			caca_log_debug("el nodo %d indice %ld tiene valor %ld", i,
+					nodo_actual->indice, nodo_actual->valor);
+			*(valores + contador_nodos_validos) = nodo_actual->valor;
+			contador_nodos_validos++;
+		}
+	}
+	*num_valores = contador_nodos_validos;
 }
 
 bool cola_prioridad_es_vacia(cola_prioridad_contexto *ctx) {
-	return !ctx->actx->raiz;
+	return !ctx->num_nodos;
 }
 
 void grafo_copia_profunda(const grafo_contexto *ctx_origen,
 		grafo_contexto *ctx_destino, tipo_dato *indices_a_ignorar,
 		int tam_indices_a_ignorar) {
+	int i, j;
 	tipo_dato indice_nodo_origen_actual = 0;
 
 	tipo_dato *matrix_origen = NULL;
@@ -899,11 +963,11 @@ void grafo_copia_profunda(const grafo_contexto *ctx_origen,
 						tam_indices_a_ignorar, indice_nodo_origen_actual)) {
 
 			caca_log_debug("ignorando %ld\n", indice_nodo_origen_actual);
-			for (int i = 0; i < MAX_FILAS_NODOS; i++) {
+			for (i = 0; i < MAX_FILAS_NODOS; i++) {
 				*(matrix_destino + i * MAX_COLUMNAS_NODOS
 						+ indice_nodo_origen_actual) = GRAFO_VALOR_INVALIDO;
 			}
-			for (int j = 0; j < MAX_COLUMNAS_NODOS; j++) {
+			for (j = 0; j < MAX_COLUMNAS_NODOS; j++) {
 				*(matrix_destino
 						+ indice_nodo_origen_actual * MAX_COLUMNAS_NODOS + j) =
 						GRAFO_VALOR_INVALIDO;
@@ -945,7 +1009,8 @@ void grafo_copia_nodo(const nodo *nodo_origen, nodo *nodo_destino) {
 
 bool caca_arreglo_contiene(tipo_dato *arreglo, int tam_arreglo,
 		tipo_dato valor_buscado) {
-	for (int i = 0; i < tam_arreglo; i++) {
+	int i;
+	for (i = 0; i < tam_arreglo; i++) {
 		caca_log_debug("comprarando %ld con %ld", *(arreglo + i), valor_buscado);
 		if (*(arreglo + i) == valor_buscado) {
 			return verdadero;
@@ -963,7 +1028,8 @@ bool caca_arreglo_contiene(tipo_dato *arreglo, int tam_arreglo,
 
 void caca_inutiliza_nodo_cola_prioridad(nodo_cola_prioridad *nodos,
 		int num_nodos) {
-	for (int i = 0; i < num_nodos; i++) {
+	int i;
+	for (i = 0; i < num_nodos; i++) {
 		COLA_PRIORIDAD_ASIGNA_INDICE((nodos + i),
 				COLA_PRIORIDAD_VALOR_INVALIDO);
 		COLA_PRIORIDAD_ASIGNA_VALOR((nodos + i), COLA_PRIORIDAD_VALOR_INVALIDO);
@@ -972,8 +1038,9 @@ void caca_inutiliza_nodo_cola_prioridad(nodo_cola_prioridad *nodos,
 
 void caca_realinea_array(tipo_dato *arreglo, int num_filas,
 		int alineacion_actual, int alineacion_nueva) {
-	for (int i = 0; i < num_filas; i++) {
-		for (int j = 0; j < alineacion_nueva; j++) {
+	int i, j;
+	for (i = 0; i < num_filas; i++) {
+		for (j = 0; j < alineacion_nueva; j++) {
 			*(arreglo + i * alineacion_nueva + j) = *(arreglo
 					+ i * alineacion_actual + j);
 		}
@@ -1103,12 +1170,13 @@ void arbol_binario_colectar_datos_recorrido_preoder(nodo_arbol_binario *raiz,
 }
 
 char *caca_arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer) {
+	int i;
 	char *ap_buffer = NULL;
 	int characteres_escritos = 0;
 
 	ap_buffer = buffer;
 
-	for (int i = 0; i < tam_arreglo; i++) {
+	for (i = 0; i < tam_arreglo; i++) {
 		characteres_escritos += sprintf(ap_buffer + characteres_escritos, "%ld",
 				*(arreglo + i));
 		if (i < tam_arreglo - 1) {

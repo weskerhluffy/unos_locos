@@ -200,7 +200,7 @@ typedef enum BOOLEANOS {
 	(nodo)->indice=nuevo_indice
 
 #define COLA_PRIORIDAD_ASIGNA_VALOR(nodo,nuevo_valor) \
-	(nodo)->indice=nuevo_valor
+	(nodo)->valor=nuevo_valor
 
 /*
  XXX: http://www.programiz.com/c-programming/c-enumeration
@@ -263,6 +263,7 @@ typedef struct arbol_binario_contexto {
 } arbol_binario_contexto;
 
 typedef struct cola_prioridad_contexto {
+	int num_nodos;
 	arbol_binario_contexto actx_mem;
 	arbol_binario_contexto *actx;
 	nodo_arbol_binario *referencias_directas_por_indice_mem[MAX_NODOS];
@@ -384,7 +385,7 @@ void cola_prioridad_modificar_valor_nodo(cola_prioridad_contexto *cpctx,
 
 void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
 		tipo_dato ind_nodo_origen, tipo_dato ind_nodo_destino,
-		tipo_dato *antecesores);
+		tipo_dato *antecesores,nodo_cola_prioridad *nodo_origen);
 
 void cola_prioridad_init(cola_prioridad_contexto *ctx,
 		nodo_cola_prioridad *nodos, tipo_dato *valores, tipo_dato *indices,

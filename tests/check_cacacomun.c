@@ -170,7 +170,6 @@ START_TEST( test_lee_matrix_long_stdin) {
 	 */
 }
 
-
 END_TEST
 
 START_TEST( test_apuntador_allocado) {
@@ -225,7 +224,6 @@ START_TEST( test_imprime_array) {
 			"El valor %p no es apuntador valido", ptr);
 }
 END_TEST
-
 
 START_TEST( test_init_arbol_avl) {
 
@@ -332,7 +330,8 @@ START_TEST( test_borrar_arbol_avl_ref_dir) {
 	caca_log_debug("borrando nodo %ld",
 			ARBOL_AVL_GET_VALOR(*(referencias_directas + 7)));
 
-	arbol_avl_borrar_referencia_directa(&ctx.raiz, *(referencias_directas + 7),NULL);
+	arbol_avl_borrar_referencia_directa(&ctx.raiz, *(referencias_directas + 7),
+			NULL );
 
 	arbol_binario_colectar_datos_recorrido_inoder(ctx.raiz,
 			valores_preorder_resultado, &resultado);
@@ -410,8 +409,8 @@ END_TEST
 START_TEST( test_cola_prioridad_pop) {
 
 	const tipo_dato VALORES[NUM_VALORES] = { 9, 5, 10, 1, 6, 11, 0, 2, 3 };
-	const tipo_dato VALORES_FINALES_INORDER[NUM_VALORES - 2] = { 2, 3, 4, 5, 6,
-			9, 10 };
+	const tipo_dato VALORES_FINALES_INORDER[NUM_VALORES - 2] = { 9, 5, 10, 6,
+			11, 2, 3 };
 
 	int resultado = 0;
 	int num_datos_colectados = 0;
@@ -420,6 +419,8 @@ START_TEST( test_cola_prioridad_pop) {
 	nodo_cola_prioridad **referencias_directas = NULL;
 	nodo_cola_prioridad *nodo_pop_1 = NULL;
 	nodo_cola_prioridad *nodo_pop_2 = NULL;
+
+//	sleep(5);
 
 	caca_log_debug("empezando el año");
 
@@ -443,10 +444,14 @@ START_TEST( test_cola_prioridad_pop) {
 		caca_log_debug("eien pressure %d %ld", i,
 				*(valores_inorder_resultado + i));
 	}
+	caca_log_debug("los datos colectados %d", num_datos_colectados);
+	caca_log_debug("el popeado 1 %ld", nodo_pop_1->valor);
+	caca_log_debug("el popeado 2 %ld", nodo_pop_2->valor);
 
 	resultado = num_datos_colectados == (NUM_VALORES - 2)
-			&& !memcmp(VALORES_FINALES_INORDER, valores_inorder_resultado, 9)
-			&& nodo_pop_1->valor == 0 && nodo_pop_2->valor == 1;
+			&& !memcmp(VALORES_FINALES_INORDER, valores_inorder_resultado,
+					NUM_VALORES - 2) && nodo_pop_1->valor == 0
+			&& nodo_pop_2->valor == 1;
 
 	zlog_fini();
 
@@ -477,8 +482,8 @@ START_TEST( test_dijkstra) {
 	dijkstra_main((void *) VERTICES, NUM_VERTICES, 0, 0, NULL,
 			distancias_minimas_calculadas, antecesores);
 
-	resultado = !memcmp(DISTANCIAS_FINALES, distancias_minimas_calculadas,
-			NUM_VERTICES) && !memcmp(ANTECESORES, antecesores, NUM_VERTICES);
+	resultado = !memcmp(DISTANCIAS_FINALES, distancias_minimas_calculadas, 9)
+			&& !memcmp(ANTECESORES, antecesores, 99);
 
 	caca_log_debug("los antecesores kedaron: %s",
 			caca_arreglo_a_cadena(antecesores, NUM_VERTICES, buffer));
@@ -493,10 +498,7 @@ START_TEST( test_dijkstra) {
 			caca_arreglo_a_cadena(distancias_minimas_calculadas, NUM_VERTICES,
 					buffer));
 }
-
 END_TEST
-
-
 
 Suite *
 cacacomun_suite(void) {
@@ -506,11 +508,9 @@ cacacomun_suite(void) {
 	/* Core test case */
 	TCase *tc_core = tcase_create("Core");
 	tcase_set_timeout(tc_core, 600);
-	/*
 	tcase_add_test(tc_core, test_lee_matrix_long_stdin);
 	tcase_add_test(tc_core, test_lee_matrix);
 	tcase_add_test(tc_core, test_lee_matrix_stdin);
-	*/
 	tcase_add_test(tc_core, test_apuntador_allocado);
 	tcase_add_test(tc_core, test_imprime_apuntador);
 	tcase_add_test(tc_core, test_imprime_array);
@@ -520,6 +520,8 @@ cacacomun_suite(void) {
 	tcase_add_test(tc_core, test_borrar_arbol_avl_ref_dir);
 	tcase_add_test(tc_core, test_dijkstra_modificar_valor_nodo);
 	tcase_add_test(tc_core, test_cola_prioridad_pop);
+	/*
+	 */
 	tcase_add_test(tc_core, test_dijkstra);
 	/*
 	 */
