@@ -461,11 +461,10 @@ END_TEST
 
 #define NUM_VERTICES  14
 START_TEST( test_dijkstra) {
-
 	const tipo_dato VERTICES[NUM_VERTICES][3] = { { 0, 1, 4 }, { 0, 7, 8 }, { 1,
 			7, 11 }, { 1, 2, 8 }, { 7, 8, 7 }, { 7, 6, 1 }, { 2, 8, 2 }, { 8, 6,
 			6 }, { 2, 3, 7 }, { 6, 5, 2 }, { 2, 5, 4 }, { 3, 4, 9 },
-			{ 5, 4, 10 }, { 3, 5, 14 }, };
+			{ 5, 4, 10 }, { 3, 5, 14 } };
 	const tipo_dato DISTANCIAS_FINALES[NUM_VERTICES] = { 0, 4, 12, 19, 21, 11,
 			9, 8, 14 };
 	const tipo_dato ANTECESORES[NUM_VERTICES] = { 0, 0, 1, 2, 5, 6, 7, 0, 2 };
@@ -474,8 +473,16 @@ START_TEST( test_dijkstra) {
 
 	char buffer[MAX_TAM_CADENA] = { '\0' };
 
-	tipo_dato distancias_minimas_calculadas[NUM_VERTICES] = { 0 };
-	tipo_dato antecesores[NUM_VERTICES] = { 0 };
+	/*
+	 tipo_dato distancias_minimas_calculadas[NUM_VERTICES] = { 0 };
+	 tipo_dato antecesores[NUM_VERTICES] = { 0 };
+	 */
+
+	tipo_dato *distancias_minimas_calculadas;
+	tipo_dato *antecesores;
+
+	distancias_minimas_calculadas = calloc(NUM_VERTICES, sizeof(tipo_dato));
+	antecesores = calloc(NUM_VERTICES, sizeof(tipo_dato));
 
 	caca_log_debug("yo no olvido al año viejo");
 
@@ -483,7 +490,7 @@ START_TEST( test_dijkstra) {
 			distancias_minimas_calculadas, antecesores);
 
 	resultado = !memcmp(DISTANCIAS_FINALES, distancias_minimas_calculadas, 9)
-			&& !memcmp(ANTECESORES, antecesores, 99);
+			&& !memcmp(ANTECESORES, antecesores, 9);
 
 	caca_log_debug("los antecesores kedaron: %s",
 			caca_arreglo_a_cadena(antecesores, NUM_VERTICES, buffer));

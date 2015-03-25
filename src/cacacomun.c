@@ -690,6 +690,7 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 	bool nodos_distancias_minimas_calculadas[MAX_NODOS] = { falso };
 	nodo_cola_prioridad distancias_minimas_nodos[MAX_NODOS];
 	nodo_cola_prioridad *distancias_minimas_nodos_calculadas[MAX_NODOS];
+	nodo_cola_prioridad **distancias_minimas_nodos_calculadas;
 
 	caca_log_debug("fairy tail\n");
 
