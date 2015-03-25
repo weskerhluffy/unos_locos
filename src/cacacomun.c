@@ -660,6 +660,8 @@ void dijkstra_relaxar_nodo(grafo_contexto *gctx, cola_prioridad_contexto *cpctx,
 		cola_prioridad_modificar_valor_nodo(cpctx, ind_nodo_destino,
 				distancia_min_origen->valor + dist_origen_dest);
 		if (antecesores) {
+			caca_log_debug("asignando antecesor de %ld es %ld",
+					ind_nodo_destino, ind_nodo_origen);
 			*(antecesores + ind_nodo_destino) = ind_nodo_origen;
 		}
 	}
@@ -688,9 +690,24 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 	nodo_cola_prioridad *nodo_mas_cercas = NULL;
 
 	bool nodos_distancias_minimas_calculadas[MAX_NODOS] = { falso };
-	nodo_cola_prioridad distancias_minimas_nodos[MAX_NODOS];
-	nodo_cola_prioridad *distancias_minimas_nodos_calculadas[MAX_NODOS];
+	/*
+	 nodo_cola_prioridad distancias_minimas_nodos[MAX_NODOS];
+	 nodo_cola_prioridad *distancias_minimas_nodos_calculadas[MAX_NODOS];
+	 */
+	nodo_cola_prioridad *distancias_minimas_nodos;
 	nodo_cola_prioridad **distancias_minimas_nodos_calculadas;
+
+	distancias_minimas_nodos = calloc(MAX_NODOS, sizeof(nodo_cola_prioridad));
+	if (!distancias_minimas_nodos) {
+		perror("no ay memm para distancias minimas nodos");
+		abort();
+	}
+	distancias_minimas_nodos_calculadas = calloc(MAX_NODOS,
+			sizeof(nodo_cola_prioridad*));
+	if (!distancias_minimas_nodos_calculadas) {
+		perror("no ay memm para distancias minimas nodos cacalculadas");
+		abort();
+	}
 
 	caca_log_debug("fairy tail\n");
 
@@ -773,8 +790,11 @@ void dijkstra_main(void *matrix_distancias, int num_filas,
 				i == ind_nodo_origen ? 0 :
 				caca_apuntador_valido(
 						(*(distancias_minimas_nodos_calculadas + i))) ?
-						(*(distancias_minimas_nodos_calculadas + i))->valor :
-						COLA_PRIORIDAD_VALOR_INVALIDO;
+						(*(distancias_minimas_nodos_calculadas + i))->valor
+								== MAX_VALOR ?
+								COLA_PRIORIDAD_VALOR_INVALIDO :
+								(*(distancias_minimas_nodos_calculadas + i))->valor
+						:COLA_PRIORIDAD_VALOR_INVALIDO;
 	}
 	caca_log_debug("saliendo de la mierda \n");
 
@@ -1175,6 +1195,7 @@ char *caca_arreglo_a_cadena(tipo_dato *arreglo, int tam_arreglo, char *buffer) {
 	char *ap_buffer = NULL;
 	int characteres_escritos = 0;
 
+	memset(buffer, 0, 1000);
 	ap_buffer = buffer;
 
 	for (i = 0; i < tam_arreglo; i++) {
